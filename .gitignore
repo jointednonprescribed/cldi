@@ -1,0 +1,15 @@
+
+# Workspace Directories
+.vscode/*
+.ide-ease/*
+# Workspace Formats
+*.code-workspace
+
+# Binary Formats
+*.pdb
+*.exe
+*.out
+*.dll
+*.so
+*.obj
+*.o

@@ -1,0 +1,2254 @@
+
+/* Setup for cldi-core.                     */
+#include <ciahlldi/cldi/core/setup.h>
+
+/* Implementing: cldi-core: text/str        */
+#include <ciahlldi/cldi/core/text/str.h>
+
+/* Requires:     cldi-core: text/chartypes  */
+#include <ciahlldi/cldi/portable/text/chartypes.h>
+/*                          text/strfuncs   */
+//#include <ciahlldi/cldi/core/types/strfuncs.h>
+/*                          sysfuncs/memory */
+#include <ciahlldi/cldi/core/sysfuncs/memory.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
+/* ----------------------------------- */
+/* `cldiStr` Type */
+
+	const cldiConstStr CLDICONSTSTR_NULL = {
+		.type       = CLDI_CHARTYPE_NONE,
+		.address    = NULL,
+		.char_count = 0,
+		.data       = CLDISTR_DATA_NONE
+	};
+
+	bool
+	cldiConstStr_InitNewState(
+		cldiConstStr    * self,
+		CLDI_CHARTYPE     __type,
+		size_t        __len,
+		const char *const __str)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		if (__type <= 0) {
+			/* ERR: INVALID CHARACTER TYPE ENTERED */
+			return false;
+		}
+
+		/* Verify and store the correct size of the entire string. */
+		const size_t full_size =
+			(__type == CLDI_CHARTYPE_ASCII)?
+				cldiASCIIStrSize(__len, __str):
+			(__type == CLDI_CHARTYPE_UTF8)?
+				cldiUTF8StrSize (__len, __str):
+			(__type == CLDI_CHARTYPE_UTF16)?
+				cldiUTF16StrSize(__len, __str):
+				cldiUTF32StrSize(__len, __str);
+
+		char *const allocated_copy = cldiMemReserveText(full_size, CLDIMEM_VISIBLE);
+		if (allocated_copy == NULL) {
+			/* ERR: FAILED TO RESERVE MEMORY */
+			return false;
+		}
+		/* Try to copy the data from the passed string to the new reserved memory. */
+		else if ( cldiCopyBytes(full_size, allocated_copy, __str) != 0 ) {
+			/* ERR: FAILED TO COPY DATA */
+			cldiMemDrop(allocated_copy);
+			return false;
+		} else if ( cldiMemConfirm(allocated_copy) != 0 ) {
+			/* ERR: FAILED TO CREATE A STRING STATE */
+			return false;
+		}
+
+		*self = {
+			.address    = allocated_copy,
+			.type       = __type,
+			.char_count = __len,
+			.data       = CLDISTR_DATA_DEFAULT
+		};
+
+		return true;
+	}
+	bool
+	cldiConstStr_InitAsCopy(cldiConstStr * self, const cldiConstStr * __cpy)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		if (__cpy->type <= 0) {
+			/* ERR: INVALID TYPE OF COPY TARGET */
+			return false;
+		}
+
+		const size_t full_size =
+			(__cpy->type == CLDI_CHARTYPE_ASCII)?
+				cldiASCIIStrSize(__cpy->char_count, __cpy->address):
+			(__cpy->type == CLDI_CHARTYPE_UTF8)?
+				cldiUTF8StrSize (__cpy->char_count, __cpy->address):
+			(__cpy->type == CLDI_CHARTYPE_UTF16)?
+				cldiUTF16StrSize(__cpy->char_count, __cpy->address):
+				cldiUTF32StrSize(__cpy->char_count, __cpy->address);
+
+		char *const allocated_copy =
+			cldiMemReserveText(full_size, cldiMemBlockVisibility(__cpy->address));
+		if (allocated_copy == NULL) {
+			/* ERR: FAILED TO RESERVE MEMORY */
+			return false;
+		}
+		/* Try to copy the data. */
+		else if ( cldiCopyBytes(full_size, allocated_copy, __cpy->address) != 0 ) {
+			/* ERR: FAILED TO COPY DATA */
+			cldiMemDrop(allocated_copy);
+			return false;
+		} else if ( cldiMemConfirm(allocated_copy) != 0 ) {
+			/* ERR: FAILED TO CREATE A STRING STATE */
+			return false;
+		}
+
+		*self = {
+			.type       = __cpy->type,
+			.address    = allocated_copy,
+			.char_count = __cpy->char_count,
+			.data       = CLDISTR_DATA_DEFAULT
+		};
+
+		return true;
+	}
+	/* Make methods */
+	cldiConstStr cldiConstStr_MakeNewState(
+		CLDI_CHARTYPE     __type,
+		size_t        __len,
+		const char *const __str)
+	{
+		cldiConstStr make;
+		return
+			cldiConstStr_InitNewState(&make, __chartype, __len, __str)?
+			make : CLDICONSTSTR_NULL;
+	}
+	cldiConstStr cldiConstStr_MakeAsCopy(const cldiConstStr * __cpy)
+	{
+		cldiConstStr make;
+		return
+			cldiConstStr_InitAsCopy(&make, __cpy)?
+			make : CLDICONSTSTR_NULL;
+	}
+	cldiConstStr cldiConstStr_MakeShared(const cldiConstStr * __shared)
+	{
+		cldiConstStr make;
+		return
+			cldiConstStr_InitShared(&make, __shared)?
+			make : CLDICONSTSTR_NULL;
+	}
+	/* New methods */
+	cldiConstStr* cldiConstStr_NewState(
+		CLDI_CHARTYPE     __type,
+		size_t        __len,
+		const char *const __data)
+	{
+		cldiConstStr * allocated_object =
+			cldiMemReserve(sizeof(cldiConstStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!cldiConstStr_InitNewState(allocated_object, __type, __len, __data)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiConstStr* cldiConstStr_NewAsCopy(const cldiConstStr * __cpy)
+	{
+		cldiConstStr * allocated_object =
+			cldiMemReserve(sizeof(cldiConstStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!cldiConstStr_InitAsCopy(allocated_object, __cpy)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiConstStr* cldiConstStr_NewShared(const cldiConstStr * __cpy)
+	{
+		cldiConstStr * allocated_object =
+			cldiMemReserve(sizeof(cldiConstStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!cldiConstStr_InitShared(allocated_object, __cpy)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+
+	bool
+	cldiConstStr_Drop(cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		bool success = true;
+
+		if (cldiConstStr_HasValidState(self)) {
+			if (cldiMemDrop(self->address) != 0) {
+				/* ERR: FAILED TO DROP MEMORY */
+				success = false;
+				goto return_area;
+			}
+		}
+
+	return_area:
+		*self = CLDICONSTSTR_NULL;
+	return_no_reset:
+		return success;
+	}
+
+	cldiaddrc_t
+	cldiConstStr_GetAddress(const cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return NULL;
+		}
+
+		return (cldiaddrc_t) self->address;
+	}
+	const char *
+	cldiConstStr_GetBytes(const cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return NULL;
+		}
+
+		return (const char *) self->address;
+	}
+	size_t
+	cldiConstStr_Length(const cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		return self->char_count;
+	}
+	size_t
+	cldiConstStr_GetSize(const cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		return (self->char_count != 0)? cldiMemBlockSize(self->address) : 0;
+	}
+	size_t
+	cldiConstStr_GetTotalSize(const cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		/* Check for invalid or null types. */
+		else if (self->type <= 0) {
+			/* ERR: BAD CHARACTER TYPE */
+			return 0;
+		}
+
+		size_t total_size = 0;
+
+		if (self->address != 0)
+			total_size += cldiMemBlockSize(self->address);
+
+		if (self->data & CLDISTR_DATA_HEAP_ALLOCATED >= CLDISTR_DATA_HEAP_ALLOCATED &&
+				cldiMemBlockVerify(self))
+			total_size += cldiMemBlockSize(self);
+
+		return total_size;
+	}
+	CLDI_CHARTYPE
+	cldiConstStr_GetTextType(const cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return CLDI_CHARTYPE_NONE;
+		}
+
+		return self->type;
+	}
+
+	bool
+	cldiConstStr_HasValidState(const cldiConststr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return self->type >= 0 && self->char_count != 0 && self->address != NULL &&
+			cldiMemBlockVerify(self->address);
+	}
+	bool
+	cldiConstStr_IsEmpty(const cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return ( (self->type > 0 && (self->address == NULL || self->char_count == 0) ) ||
+			cldiConstStr_IsNull(self));
+	}
+	bool
+	cldiConstStr_IsNull(const cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return self->type == CLDI_CHARTYPE_NONE && self->address == NULL && self->char_count == 0;
+	}
+	bool
+	cldiConstStr_IsInvalid(const cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		if (self->type == 0)
+			return (self->address != NULL || self->char_count != 0);
+		else
+			return (self < 0);
+	}
+	bool
+	cldiConstStr_IsValid(const cldiConstStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return (self->type > 0 && ((self->address == NULL && self->char_count == 0) || self->address != NULL));
+	}
+
+
+/* ----------------------------------- */
+/* `cldiStr` Type */
+
+	const cldiStr CLDISTR_NULL = {
+		.data = CLDISTR_DATA_DEFAULT,
+
+		.origin_state = {
+			.type       = CLDI_CHARTYPE_NONE,
+			.address    = NULL,
+			.char_count = 0
+		},
+
+		.current_character_type   = CLDI_CHARTYPE_NONE,
+
+		.modifiable_state_address = NULL,
+
+		.initialized_length       = 0,
+		.character_count          = 0
+	};
+
+/* Initialization/Destruction */
+
+	bool
+	cldiStr_Drop(cldiStr * self)
+	{
+		if (self == NULL) {
+			// ERR: NULL REFERENCE
+			return false;
+		}
+
+		bool success = self->origin_state.address != NULL?
+		/*_*/          cldiConstStr_Drop(&self->origin_state) :
+		/*_*/          true;
+
+		if (self->modifiable_state_address != NULL)
+			success &= cldiMemDrop(self->modifiable_state_address);
+
+		if (success != false)
+			*self = CLDISTR_NULL;
+
+		return success;
+	}
+	bool
+	cldiStr_Init(cldiStr * self)
+	{
+		*self = CLDISTR_NULL;
+		return true;
+	}
+	cldiStr
+	cldiStr_Make(cldiStr * self)
+	{
+		return CLDISTR_NULL;
+	}
+	cldiStr*
+	cldiStr_New(cldiStr * self)
+	{
+		/* Allocate memory for the object. */
+		cldiStr *const allocated_object = cldiMemRequest(sizeof(cldiStr), CLDIMEM_PRIVATE);
+
+		/* If allocation succeeded, initialize the object with CLDISTR_NULL. */
+		if (allocated_object != NULL) {
+			*allocated_object = CLDISTR_NULL;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	}
+
+
+	bool
+	_cldiStr_InitString(
+		cldiStr       * self,
+		CLDI_CHARTYPE   __chartype,
+		size_t      __len,
+		const char *const     __data,
+		bool            __writable,
+		size_t      __extra)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		else if (__chartype <= 0 || __len <= 0) {
+			/* PRB: CHARACTER TYPE OF INVALID/NONE STRING TYPE,
+			.       OR ZERO LENGTH DATA ADDRESS (NO ORIGINAL DATA).
+
+			.* Define as carrying the specified type and the supplied address,
+			.  but with all other fields as NULL or 0, including modifiable state,
+			.  this freezes the string's state, and implies that no initialized
+			.  or valid data exists there. */
+			*self = {
+				.data = CLDISTR_DATA_DEFAULT,
+
+				.origin_state = {
+					.type       = __chartype,
+					.address    = NULL,
+					.char_count = 0,
+					.data       = CLDISTR_DATA_NONE
+				},
+
+				.current_character_type   = CLDI_CHARTYPE_NONE,
+
+				.modifiable_state_address = NULL,
+
+				.initialized_length       = 0,
+				.character_count          = 0
+			};
+
+			return true;
+		}
+
+		cldiConstStr origin;
+
+		if (!cldiConstStr_InitNewState(&origin, __chartype, __len, __data))
+			return false;
+
+		const size_t origin_size = cldiStrSize(__chartype, __len, __data);
+
+		/* Setting initial values (origin_state and current_character_type). */
+		*self = {
+			/* This member is const, so it must be set from the beginning,
+			.  current_character_type will be the same regardless of the
+			.  outcome of the following conditional statement where the
+			.  value of __writable is checked to be true or false. */
+			.origin_state = origin,
+			.data         = CLDISTR_DATA_DEFAULT
+		};
+
+		/* __writable is checked to determine if a modifiable state is to be
+		.  created based on the set origin. */
+		if (__writable) {
+
+			/* Reserve memory to copy original data to. */
+			char * modifiable_data = cldiMemReserveText(origin_size + __extra, CLDIMEM_VISIBLE);
+			/* If reserving the data fails, set null values. */
+			if (modifiable_data == NULL)
+				goto failed_modifiable_state;
+			/* If copying the data fails, drop the reserved memory,
+			.  then set null values. */
+			if (cldiCopyBytes(origin_size, modifiable_data, origin.address) != 0) {
+				cldiMemDrop(modifiable_data);
+				goto failed_modifiable_state;
+			}
+			/* If confirming usage of the reserved memory fails,
+			.  the memory isn't reserved to this subroutine, so just
+			.  set null values. */
+			if (cldiMemConfirm(modifiable_data) != 0)
+				goto failed_modifiable_state;
+
+			self->current_character_type   = __chartype;
+			self->modifiable_state_address = modifiable_data;
+			self->initialized_length       = origin_size;
+			self->character_count          = __len;
+
+		} else {
+	failed_modifiable_state:
+			self->current_character_type   = CLDI_CHARTYPE_NONE;
+			self->modifiable_state_address = NULL;
+			self->initialized_length       = 0;
+			self->character_count          = 0;
+		}
+
+		return true;
+	}
+	bool
+	cldiStr_InitFromString(
+		cldiStr       * self,
+		CLDI_CHARTYPE   __chartype,
+		size_t      __len,
+		const char *const     __str)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return _cldiStr_InitString(self, __chartype, __len, __str, false, 0);
+	}
+	bool
+	cldiStr_InitAsString(
+		cldiStr       * self,
+		CLDI_CHARTYPE   __chartype,
+		size_t      __len,
+		const char *const     __str,
+		size_t      __extra)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return _cldiStr_InitString(self, __chartype, __len, __str, true, __extra);
+	}
+	bool
+	cldiStr_InitAsStringCopy(
+		cldiStr       * self,
+		CLDI_CHARTYPE   __chartype,
+		size_t      __len,
+		const char *const     __str)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return _cldiStr_InitString(self, __chartype, __len, __str, true, 0);
+	}
+	bool
+	cldiStr_InitFromText(cldiStr * self, const char * __str)
+	{
+		return _cldiStr_InitString(self, CLDI_CHARTYPE_C_STRING, cldiCStrlen(__str), __str, false, 0);
+	}
+	bool
+	cldistr_InitAs(cldiStr * self, const char * __str, size_t __extra)
+	{
+		return _cldiStr_InitString(self, CLDI_CHARTYPE_C_STRING, cldiCStrlen(__str), __str, true, __extra);
+	}
+	bool
+	cldiStr_InitAsTextCopy(cldiStr * self, const char * __str)
+	{
+		return _cldiStr_InitString(self, CLDI_CHARTYPE_C_STRING, cldiCStrlen(__str), __str, true, 0);
+	}
+	/* Make methods */
+	cldiStr
+	cldiStr_MakeFromString(
+		CLDI_CHARTYPE __chartype, size_t __len, const char *const __str)
+	{
+		cldiStr make;
+		return
+			_cldiStr_InitString(&make, __chartype, __len, __str, false, 0)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr
+	cldiStr_MakeAsString(
+		CLDI_CHARTYPE __chartype, size_t __len, const char *const __str, size_t __extra)
+	{
+		cldiStr make;
+		return
+			_cldiStr_InitString(&make, __chartype, __len, __str, true, __extra)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr
+	cldiStr_MakeAsStringCopy(CLDI_CHARTYPE __chartype, size_t __len, const char *const __str)
+	{
+		cldiStr make;
+		return
+			_cldiStr_InitString(&make, __chartype, __len, __str, true, 0)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr
+	cldiStr_MakeFromText(const char * __str)
+	{
+		cldiStr make;
+		return
+			_cldiStr_InitString(&make, CLDI_CHARTYPE_C_STRING, cldiCStrlen(CLDI_CHARTYPE_C_STRING, __str), __str, false, 0)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr
+	cldiStr_MakeAsText(const char * __str, size_t __extra)
+	{
+		cldiStr make;
+		return
+			_cldiStr_InitString(&make, CLDI_CHARTYPE_C_STRING, cldiCStrlen(CLDI_CHARTYPE_C_STRING, __str), __str, true, __extra)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr
+	cldiStr_MakeAsTextCopy(const char * __str)
+	{
+		cldiStr make;
+		return
+			_cldiStr_InitString(&make, CLDI_CHARTYPE_C_STRING, cldiStrlen(CLDI_CHARTYPE_C_STRING, __str), __str, true, 0)?
+			make : CLDISTR_NULL;
+	}
+	/* New methods */
+	cldiStr *
+	cldiStr_NewFromString(CLDI_CHARTYPE __chartype, size_t __len, const char *const __str)
+	{
+		cldiConstStr * allocated_object =
+			cldiMemReserve(sizeof(cldiConstStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!_cldiStr_InitFromString(allocated_object, __chartype, __len, __str, false, 0)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiStr *
+	cldiStr_NewAsString(
+		CLDI_CHARTYPE __chartype, size_t __len, const char *const __str, size_t __extra)
+	{
+		cldiConstStr * allocated_object =
+			cldiMemReserve(sizeof(cldiConstStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!_cldiStr_InitFromString(allocated_object, __chartype, __len, __str, true, __extra)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiStr *
+	cldiStr_NewAsStringCopy(CLDI_CHARTYPE __chartype, size_t __len, const char *const __str)
+	{
+		cldiConstStr * allocated_object =
+			cldiMemReserve(sizeof(cldiConstStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!_cldiStr_InitFromString(allocated_object, __chartype, __len, __str, true, 0)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiStr *
+	cldiStr_NewFromText(const char * __str)
+	{
+		cldiConstStr * allocated_object =
+			cldiMemReserve(sizeof(cldiConstStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!_cldiStr_InitFromString(allocated_object, CLDI_CHARTYPE_BASIC_STRING, cldiCStrlen(__str), __str, false, 0)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiStr *
+	cldiStr_NewAsText(const char * __str, size_t __extra)
+	{
+		cldiConstStr * allocated_object =
+			cldiMemReserve(sizeof(cldiConstStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!_cldiStr_InitFromString(allocated_object, CLDI_CHARTYPE_BASIC_STRING, cldiCStrlen(__str), __str, true, __extra)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiStr *
+	cldiStr_NewAsTextCopy(const char * __str)
+	{
+		cldiConstStr * allocated_object =
+			cldiMemReserve(sizeof(cldiConstStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!_cldiStr_InitFromString(allocated_object, CLDI_CHARTYPE_BASIC_STRING, cldiCStrlen(__str), __str, true, 0)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+
+	bool
+	cldiStr_InitSubstring(cldiStr * self, ssize_t __beg, ssize_t __end, const cldiStr * __str)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		/* Try to use __str's current state as the new origin. */
+		cldiStr_SaveAsSibling(__str, self);
+
+		self->data = CLDISTR_DATA_DEFAULT;
+
+		return ( cldiStr_Substring(__str, __beg, __end, self) != 0 );
+	}
+	bool
+	cldiStr_InitSnippet(cldiStr * self, ssize_t __end, const cldiStr * __str)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return cldiStr_InitSubstring(self, 0, __end, __str);
+	}
+	/* Make methods */
+	cldiStr
+	cldiStr_MakeSubstring(ssize_t __beg, ssize_t __end, const cldiStr * __str)
+	{
+		cldiStr make;
+		return
+			cldiStr_InitSubstring(&make, __beg, __end, __str)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr
+	cldiStr_MakeSnippet(ssize_t __end, const cldiStr * __str)
+	{
+		cldiStr make;
+		return
+			cldiStr_InitSubstring(&make, 0, __end, __str)?
+			make : CLDISTR_NULL;
+	}
+	/* New methods */
+	cldiStr *
+	cldiStr_NewSubstring(ssize_t __beg, ssize_t __end, const cldiStr * __str)
+	{
+		cldiStr * allocated_object = cldiMemReserve(sizeof(cldiStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!cldiStr_InitSubstring(allocated_object, __beg, __end, __str)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0)
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiStr *
+	cldiStr_NewSnippet(ssize_t __end, const cldiStr * __str)
+	{
+		cldiStr * allocated_object = cldiMemReserve(sizeof(cldiStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!cldiStr_InitSubstring(allocated_object, 0, __end, __str)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0)
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+
+	bool
+	_cldiStr_InitSibling(cldiStr * self, const cldiStr * __sib, bool __writable, size_t __extra)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		/* Get and store the origin state of the target string. */
+		const cldiConstStr parent = cldiStr_GetOriginState(__sib);
+
+		/* Give origin to self. */
+		*self = {
+			.origin_state = parent,
+
+			.data = CLDISTR_DATA_DEFAULT,
+
+			.current_character_type = parent.type,
+
+			.modifiable_state_address = NULL,
+
+			.initialized_length = 0,
+			.character_count    = 0
+		};
+
+		/* If a modifiable state needs to be made: */
+		if (__writable)
+			/* Create a modifiable state from the newly set parent,
+			.  if this fails, it's not a big deal, the instance won't
+			.  be harmed, and will just end up being initialized
+			.  without a modifiable state. */
+			cldiStr_ExpandFromOrigin(self, __extra);
+
+		return true;
+	}
+	bool
+	cldiStr_InitSibling(cldiStr * self, const cldiStr * __sib)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return _cldiStr_InitSibling(self, __sib, false, 0);
+	}
+	bool
+	cldiStr_InitExtendedSibling(cldiStr * self, const cldiStr * __sib, size_t __extra)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return _cldiStr_InitSibling(self, __sib, true, __extra);
+	}
+	bool
+	cldiStr_InitSiblingWithCopy(cldiStr * self, const cldiStr * __sib)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return _cldiStr_InitSibling(self, __sib, true, 0);
+	}
+	/* Make methods */
+	cldiStr
+	cldiStr_MakeSibling(const cldiStr * __sib)
+	{
+		cldiStr make;
+		return
+			_cldiStr_InitSibling(&make, __sib, false, 0)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr
+	cldiStr_MakeExtendedSibling(const cldiStr * __sib, size_t __extra)
+	{
+		cldiStr make;
+		return
+			_cldiStr_InitSibling(&make, __sib, true, __extra)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr
+	cldiStr_MakeSiblingWithCopy(const cldiStr * __sib)
+	{
+		cldiStr make;
+		return
+			_cldiStr_InitSibling(&make, __sib, true, 0)?
+			make : CLDISTR_NULL;
+	}
+	/* New method */
+	cldiStr *
+	cldiStr_NewSibling(const cldiStr * __sib)
+	{
+		cldiStr * allocated_object = cldiMemReserve(sizeof(cldiStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!_cldiStr_InitSibling(allocated_object, __sib, false, 0)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0)
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiStr *
+	cldiStr_NewExtendedSibling(const cldiStr * __sib, size_t __extra)
+	{
+		cldiStr * allocated_object = cldiMemReserve(sizeof(cldiStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!_cldiStr_InitSibling(allocated_object, __sib, true, __extra)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0)
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiStr *
+	cldiStr_NewSiblingWithCopy(const cldiStr * __sib)
+	{
+		cldiStr * allocated_object = cldiMemReserve(sizeof(cldiStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!_cldiStr_InitSibling(allocated_object, __sib, true, 0)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0)
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+
+	bool
+	cldiStr_InitFrom(cldiStr * self, const cldiStr * __from)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		/* If __from has a modifiable state in the first place,
+		.  done organically to avoid a call to HasModifiableState(). */
+		if (__from->modifiable_state_address != NULL) {
+
+			/* For remembering the character count of the decided parent (origin state)
+			.  of self and the complete parent itself. */
+			size_t          parent_length;
+			cldiConstStr    parent;
+
+			/* Get the full amount of initialized bytes in the string's
+			.  modifiable state. */
+			parent_length  = __from->character_count;
+			/* If, for whatever reason, the string's modifiable state
+			.  exists, but has no initialized data, use the string's
+			.  origin state (turn self into a sibling instead of child). */
+			if (parent_length == 0)
+				goto set_as_sibling;
+
+			/* Try to create a copy to use as an origin, if that fails,
+			.  try to initialize as a sibling. */
+			else if (!cldiConstStr_InitNewState(
+				&parent,
+				__from->current_character_type,
+				parent_length,
+				__from->modifiable_state_address)
+			)	goto set_as_sibling;
+
+			*self = {
+				.origin_state = parent,
+
+				.data = CLDISTR_DATA_DEFAULT,
+
+				.current_character_type = CLDI_CHARTYPE_NONE,
+
+				.modifiable_state_address = NULL,
+
+				.initialized_length = 0,
+				.character_count    = 0
+			};
+
+			return true;
+		}
+
+		else set_as_sibling:
+			return _cldiStr_InitSibling(self, __from, false, 0);
+	}
+	cldiStr
+	cldiStr_MakeFrom(const cldiStr * __from)
+	{
+		cldiStr make;
+		return
+			cldiStr_InitFrom(&make, __from)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr *
+	cldiStr_NewFrom(const cldiStr * __from)
+	{
+		cldiStr * allocated_object = cldiMemReserve(sizeof(cldiStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!cldiStr_InitFrom(allocated_object, __from)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+
+	bool
+	cldiStr_InitAs(cldiStr * self, const cldiStr * __copy, size_t __extra)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			goto return_failure;
+		}
+
+		/* Try to call InitFrom() as a precursor to this initialization
+		.  sequence, if that fails, so does this method. */
+		else if (cldiStr_IsInvalid(__copy) || !cldiStr_InitFrom(self, __copy))
+			goto return_failure;
+
+		/* Try to create modifiable state, if this fails, the string will
+		.  not have a modifiable state and this method will not report failure. */
+		cldiStr_ExpandFromOrigin(self, __extra);
+
+		return true;
+	return_failure:
+		return false;
+	}
+	bool
+	cldiStr_InitAsCopy(cldiStr * self, const cldiStr * __copy)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return cldiStr_InitAs(self, __copy, 0);
+	}
+	/* Make methods */
+	cldiStr
+	cldiStr_MakeAs(const cldiStr * __copy, size_t __extra)
+	{
+		cldiStr make;
+		return
+			cldiStr_InitAs(&make, __copy, __extra)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr
+	cldiStr_MakeAsCopy(const cldiStr * __copy)
+	{
+		cldiStr make;
+		return
+			cldiStr_InitAs(&make, __copy, 0)?
+			make : CLDISTR_NULL;
+	}
+	/* New methods */
+	cldiStr *
+	cldiStr_NewAs(const cldiStr * __copy, size_t __extra)
+	{
+		cldiStr * allocated_object = cldiMemReserve(sizeof(cldiStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!cldiStr_InitAs(allocated_object, __copy, __extra)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+	cldiStr *
+	cldiStr_NewAsCopy(const cldiStr * __copy)
+	{
+		cldiStr * allocated_object = cldiMemReserve(sizeof(cldiStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!cldiStr_InitAs(allocated_object, __copy, 0)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocate_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+
+	bool
+	cldiStr_InitPreallocated(
+		cldiStr       * self, 
+		CLDI_CHARTYPE   __chartype,
+		size_t      __prealloc)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		/* Define the NULL origin state, and leave the other fields to be set later. */
+		*self = {
+			.origin_state = CLDICONSTSTR_NULL,
+
+			.current_character_type = __chartype
+		};
+
+		/* Null or invalid character types SHOULD NOT reference allocated memory. */
+		if (__chartype <= 0) {
+	null_initialization:
+			self->data                     = CLDISTR_DATA_NONE;
+			self->modifiable_state_address = NULL;
+			self->initialized_length       = 0;
+			self->character_count          = 0
+
+			return false;
+		}
+
+		char *const allocated_block = cldiMemRequest(
+			CLDI_CHARTYPE_SIZEOF(__chartype) * __prealloc, CLDIMEM_PRIVATE);
+
+		/* Return failure if allocating memory failed. */
+		if (allocated_block == NULL)
+			goto null_initialization;
+
+		self->modifiable_state_address = allocated_block;
+		self->data                     = CLDISTR_DATA_DEFAULT;
+		self->initialized_length       = 0;
+		self->character_count          = 0;
+
+		return true;
+	}
+	cldiStr
+	cldiStr_MakePreallocated(CLDI_CHARTYPE __chartype, size_t __prealloc)
+	{
+		cldiStr make;
+		return
+			cldiStr_InitPreallocated(&make, __chartype, __prealloc)?
+			make : CLDISTR_NULL;
+	}
+	cldiStr *
+	cldiStr_NewPreallocated(CLDI_CHARTYPE __chartype, size_t __prealloc)
+	{
+		cldiStr * allocated_object = cldiMemReserve(sizeof(cldiStr), CLDIMEM_PRIVATE);
+
+		if (allocated_object == NULL) {
+			/* ERR: COULD NOT ALLOCATE OBJECT. */
+			goto return_null;
+		} else if (!cldiStr_InitPreallocated(allocated_object, __chartype, __prealloc)) {
+			/* ERR: COULD NOT INITIALIZE OBJECT. */
+			goto return_null;
+		} else if (cldiMemConfirm(allocated_object) != 0) {
+			/* ERR: COULD NOT AFFORD MEMORY. */
+			goto return_null;
+		}
+
+		allocated_object->data |= CLDISTR_DATA_HEAP_ALLOCATED;
+
+		return allocated_object;
+	return_null:
+		return NULL;
+	}
+
+
+/* Getters/Setters */
+
+	cldiConstStr*
+	cldiStr_RefOriginState(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return NULL;
+		}
+
+		return &self->origin_state;
+	}
+	cldiConstStr
+	cldiStr_GetOriginState(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return CLDICONSTSTR_NULL;
+		}
+
+		return self->origin_state;
+	}
+	size_t
+	cldiStr_LengthOfOrigin(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		if (!cldiStr_HasOriginState(self))
+			return 0;
+
+		return self->origin_state.character_count;
+	}
+	size_t
+	cldiStr_SizeOfOrigin(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		if (!cldiStr_HasOriginState(self))
+			return 0;
+
+		return cldiMemBlockSize(self->origin_state.address);
+	}
+	CLDI_CHARTYPE
+	cldiStr_TextTypeOfOrigin(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		return self->origin_state.type;
+	}
+
+	const char *
+	cldiStr_ModifiableStateBytes(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		if (!cldiStr_HasModifiableState(self))
+			return 0;
+
+		return (const char*) self->modifiable_state_address;
+	}
+	cldiaddrc_t
+	cldiStr_ModifiableStateAddress(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		if (!cldiStr_HasModifiableState(self))
+			return 0;
+
+		return (const void*) self->modifiable_state_address;
+	}
+	size_t
+	cldiStr_Length(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		if (cldiStr_HasModifiableState(self))
+			return self->character_count;
+		else if (cldiStr_HasOriginState(self))
+			return self->origin_state.char_count;
+		else
+			return 0;
+	}
+	size_t
+	cldiStr_GetInitializedSize(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		if (cldiStr_HasModifiableState(self))
+			return self->initialized_size;
+		else if (cldiStr_HasOriginState(self))
+			return cldiMemBlockSize(self->origin_state.address);
+		else
+			return 0;
+	}
+	size_t
+	cldiStr_GetBlockSize(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		if (!cldiStr_HasModifiableState(self))
+			return 0;
+
+		return cldiMemBlockSize(self->modifiable_state_address);
+	}
+	size_t
+	cldiStr_GetTotalSize(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		size_t total_size = 0;
+
+		if (cldiStr_HasOriginState(self))
+			total_size += cldiMemBlockSize(self->origin_state.address);
+
+		if (cldiStr_HasModifiableState(self))
+			total_size += cldiMemBlockSize(self->modifiable_state_address);
+
+		if (self->data & CLDISTR_DATA_HEAP_ALLOCATED == CLDISTR_DATA_HEAP_ALLOCATED)
+			total_size += cldiMemBlockSize(self);
+
+		return total_size;
+	}
+	CLDI_CHARTYPE
+	cldiStr_CurrentTextType(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return CLDI_CHARTYPE_NONE;
+		}
+
+		return self->current_character_type;
+	}
+
+	bool
+	cldiStr_HasUnusedSpace(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		if (!cldiStr_HasModifiableState(self))
+			return false;
+
+		/* Return whether or not the size of the modifiable state is greater than the
+		.  amount of initialized bytes contained inside (whether or not theres still
+		.  space in the modifiable state). */
+		return ( cldiMemBlockSize(self->modifiable_state_address) > self->initialized_length );
+	}
+	bool
+	cldiStr_HasFullTextField(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		if (!cldiStr_HasModifiableState(self))
+			return false;
+
+		/* Return whether or not the size of the modifiable state and the amount of
+		.  initialized bytes inside are equal (there is no more space in the modifiable
+		.  state). */
+		return cldiMemBlockSize(self->modifiable_state_address) >= self->initialized_length;
+	}
+	bool
+	cldiStr_HasChangedTextTypes(const cldistr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		if (!cldiStr_HasModifiableState(self))
+			return false;
+
+		return ( self->origin_state.type != self->current_character_type );
+	}
+
+	bool
+	cldiStr_IsNull(const cldiStr * self)
+	{
+		return self == NULL || ();
+	}
+	bool
+	cldiStr_IsUsable(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return (cldiStr_HasOriginState(self) && self->origin_state.char_count > 0) ||
+		/*_*/  (cldiStr_HasModifiableState(self) && self->initialized_length > 0);
+	}
+	bool
+	cldiStr_IsUnusable(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return true;
+		}
+
+		return (!cldiStr_HasOriginState(self) || self->origin_state.char_count == 0) &&
+		/*_*/  (!cldiStr_HasModifiableState(self) || self->initialized_length == 0);
+	}
+	bool
+	IsValid(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return
+			(self->origin_state.type >= 0 ||
+			(self->origin_state.type == 0 && self->origin_state.address == NULL)) ||
+
+			(self->current_character_type >= 0 ||
+			(self->current_character_type == 0 && self->modifiable_state_address == NULL));
+	}
+	bool
+	cldiStr_IsInvalid(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return
+			(self->origin_state.type < 0 ||
+			(self->origin_state.type == 0 && self->origin_state.address != NULL)) &&
+
+			(self->current_character_type < 0 ||
+			(self->current_character_type == 0 && self->modifiable_state_address != NULL));
+	}
+
+	bool
+	cldiStr_HasOriginState(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return cldiConstStr_HasValidState(&self->origin_state);
+	}
+	bool
+	cldiStr_HasModifiableState(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return self->current_character_type > 0 &&
+		/*_*/  self->modifiable_state_address != NULL &&
+		/*_*/  cldiVerifyMemBlock(self->modifiable_state_address) == CLDIMEM_OK;
+	}
+	bool
+	cldiStr_HasBothStates(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return cldiStr_HasOriginState(self) && cldiStr_HasModifiableState(self);
+	}
+	bool
+	cldiStr_IsExclusivelyWritable(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return (!cldiStr_HasOriginState(self)) && cldiStr_HasModifiableState(self);
+	}
+	bool
+	cldiStr_IsConst(const cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return false;
+		}
+
+		return (!cldiStr_HasModifiableState(self)) && cldiStr_HasOriginState(self);
+	}
+
+	size_t
+	cldiStr_AbsolutePositionOf(const cldiStr * self, ssize_t __idx)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		/* If __idx is 0, return 0 again, 0 is 0. */
+		if (__idx == 0)
+			return 0;
+
+		/* Check for a modifiable state to use its length. */
+		if (cldiStr_HasModifiableState(self)) {
+			const size_t range = self->character_count;
+
+			if (__idx >= range) {
+	ERR_OUT_OF_RANGE:
+				/* ERR: OUT OF RANGE */
+				return 0;
+			}
+
+			else if (__idx < 0) {
+				const size_t absi = __idx * (-1);
+
+				if (absi >= range) goto ERR_OUT_OF_RANGE;
+				else return range - absi;
+			}
+
+			else return (size_t) __idx;
+		}
+		/* If there is no modifiable state, but there is an origin,
+		.  use that instead. */
+		else if (cldiStr_HasOriginState(self)) {
+			const size_t range = self->character_count;
+
+			if (__idx >= range)
+				goto ERR_OUT_OF_RANGE;
+
+			else if (__idx < 0) {
+				const size_t absi = __idx * (-1);
+
+				if (absi >= range) goto ERR_OUT_OF_RANGE;
+				else return range - absi;
+			}
+
+			else return (size_t) __idx;
+		}
+		/* If there are neither, error. */
+		else {
+			/* ERR: NO STRING DATA */
+			return 0;
+		}
+	}
+	size_t
+	cldiStr_OffsetOf(const cldiStr * self, ssize_t __idx)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		/* 0 is 0, whether __idx != 0 (__idx was invalid) or __idx == 0 (__idx was just 0),
+		.  the output of the function, stored in `index`, is 0. and so, will never NOT point
+		.  to the beginning. */
+		if (__idx == 0)
+			return 0;
+
+		if (!cldiStr_HasModifiableState(self))
+			return cldiStr_OffsetInOrigin(__idx);
+
+		/* Store the absolute position of the passed index to be able
+		.  to know exactly where it points, relative to the beginning. */
+		const size_t index = cldiStr_AbsolutePositionOf(self, __idx);
+		if (index == 0)
+			return 0;
+
+		const CLDI_CHARTYPE str_type = self->current_character_type;
+
+		/* ASCII strings are one byte each. */
+		if (str_type == CLDI_CHARTYPE_ASCII)
+			return index;
+		/* Unicode strings can contain variable-width characters, but usually
+		.  at least contain multi-byte characters, therefor, you have to extrapolate
+		.  the true size of the string. */
+		else
+			return cldiStrSize(str_type, index, self->modifiable_state_address);
+	}
+	cldiStrDualMarker_t
+	cldiStr_AbsoluteBoundsOf(const cldiStr * self, ssize_t __1, ssize_t __2)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return {.error=1, .p1=0,.p2=0};
+		}
+
+		if (!cldiStr_HasModifiableState(self))
+			return cldiStr_AbsoluteBoundsInOrigin(self, __1, __2);
+
+		/* The two points to return */
+		size_t abs1 = cldiStr_AbsolutePositionOf(__1),
+		/*_*/      abs2 = cldiStr_AbsolutePositionOf(__2);
+
+		/* Index 1 must be less than or equal to Index 2. */
+		if (abs1 > abs2) {
+			/* ERR: POINTS WERE ENTERED BACKWARDS */
+			return {.error=1, .p1=0,.p2=0};
+		}
+
+		/* Remember the character type of the string. */
+		const CLDI_CHARTYPE str_type = self->current_character_type;
+
+		/* ASCII strings are one byte each. */
+		if (str_type == CLDI_CHARTYPE_ASCII)
+			/* Return the data. */
+			return { .p1 = abs1, .p2 = abs2,  .error=0};
+		/* Unicode strings can contain variable-width characters, but usually
+		.  at least contain multi-byte characters, therefor, you have to extrapolate
+		.  the true size of the string. */
+		else {
+			/* Remember the address of the string. */
+			const char *const   str_addr = self->modifiable_state_address;
+			/* Store the true offset of the first index. */
+			const size_t pt1 = cldiStrSize(str_type, abs1, str_addr);
+
+			return {
+				.p1 = pt1,
+				.p2 = (abs1 == abs2)? pt1 : cldiStrSize(str_type, abs2, str_addr),
+				.error=0
+			};
+		}
+	}
+	size_t
+	cldiStr_AbsolutePositionInOrigin(const cldiStr * self, ssize_t __idx)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		if (!cldiStr_HasOriginState(self)) {
+		ERR_NO_VALID_ORIGIN:
+			/* ERR: NO VALID ORIGIN */
+			return 0;
+		}
+
+		/* If __idx is 0, return 0 again, 0 is 0. */
+		if (__idx == 0)
+			return 0;
+
+		/* Remember the range of indices that exist in the origin state. */
+		const size_t range = self->origin_state.char_count;
+
+		/* Positives that are too large (out of range): */
+		if (__idx >= range) {
+		ERR_OUT_OF_RANGE:
+			/* ERR: OUT OF RANGE */
+			return 0;
+		}
+
+		/* Dealing with negatives: */
+		else if (__idx < 0) {
+			/* Flip its sign. */
+			const size_t absi = __idx * (-1);
+
+			/* Negatives that are too low (out of range). */
+			if (absi >= range) goto ERR_OUT_OF_RANGE;
+			else return range - absi;
+		}
+
+		else return (size_t) __idx;
+	}
+	size_t
+	cldiStr_OffsetInOrigin(const cldiStr * self, ssize_t __idx)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 0;
+		}
+
+		if (!cldiStr_HasOriginState(self)) {
+		ERR_NO_VALID_ORIGIN:
+			/* ERR: NO VALID ORIGIN */
+			return 0;
+		}
+
+		/* 0 is 0, whether __idx != 0 (__idx was invalid) or __idx == 0 (__idx was just 0),
+		.  the output of the function, stored in `index`, is 0. and so, will never NOT point
+		.  to the beginning. */
+		if (__idx == 0)
+			return 0;
+
+		/* Store the absolute position of the passed index to be able
+		.  to know exactly where it points, relative to the beginning. */
+		const size_t index = cldiStr_AbsolutePositionOf(self, __idx);
+		if (index == 0)
+			return 0;
+
+		/* Remember the character type of the string. */
+		const CLDI_CHARTYPE str_type = self->origin_state.type;
+
+		/* ASCII strings are one byte each. */
+		if (str_type == CLDI_CHARTYPE_ASCII)
+			return index;
+		/* Unicode strings can contain variable-width characters, and
+		.  usually carry multi-byte characters. */
+		else
+			return cldiStrSize(str_type, index, self->origin_state.address);
+	}
+	cldiStrDualMarker_t
+	cldiStr_AbsoluteBoundsInOrigin(const cldiStr * self, ssize_t __1, ssize_t __2)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return {.error=1, .p1=0,.p2=0};
+		}
+
+		if (!cldiStr_HasOriginState(self)) {
+		ERR_NO_VALID_ORIGIN:
+			/* ERR: NO VALID ORIGIN */
+			return {.error=1, .p1=0,.p2=0};
+		}
+
+		/* The two points to return */
+		size_t abs1 = cldiStr_AbsolutePositionOf(__1),
+		/*_*/      abs2 = cldiStr_AbsolutePositionOf(__2);
+
+		/* Index 1 must be less than or equal to Index 2. */
+		if (abs1 > abs2) {
+			/* ERR: POINTS WERE ENTERED BACKWARDS */
+			return {.error=1, .p1=0,.p2=0};
+		}
+
+		/* Remember the character type of the string. */
+		const CLDI_CHARTYPE str_type = self->origin_state.type;
+
+		/* ASCII strings are one byte each. */
+		if (str_type == CLDI_CHARTYPE_ASCII)
+			/* Return the data. */
+			return { .p1 = abs1, .p2 = abs2,  .error=0};
+		/* Unicode strings can contain variable-width characters, and usually
+		.  carry multi-byte characters. */
+		else {
+			/* Remember the address of the string. */
+			const char *const str_addr = self->origin_state.address;
+			/* Calculate and store the offset of the first point. */
+			const size_t pt1 = cldiStrSize(str_type, abs1, str_addr);
+			/* Return the data, if the second point is not equal to the first,
+			.  calculate the remaining offset from the first point to the second
+			.  (the distance between the two points), and the second point will
+			.  be the offset of the first point plus the calculated width of the
+			.  range. */
+			return {
+				.p1 = pt1,
+				.p2 = (abs1 == abs2)? pt1 :
+					(cldiStrSize(str_type, abs2-abs1, str_addr+pt1) ) + pt1,
+				.error=0
+			};
+		}
+	}
+
+
+	/* String Copying/Management */
+
+	int
+	cldiStr_ExportOriginPortionTo(
+		const cldiStr * self,
+		ssize_t     __beg,
+		ssize_t     __end,
+		char          * __sv)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+		/* Check for an origin state. */
+		else if (!cldiStr_HasOriginState(self)) {
+			/* ERR: NO ORIGIN */
+			return 1;
+		}
+
+		/* If the beginning is 0 (doesn't require any calculation) */
+		if (__beg == 0) {
+			/* The size of the portion to be copied from the beginning. */
+			const size_t portion_size = cldiStr_OffsetInOrigin(self, __end);
+			if (portion_size == 0) {
+				/* ERR: SPECIFIED AREA CONTAINS NO DATA */
+				return 1;
+			}
+
+			return cldiCopyBytes(portion_size, __sv, self->origin_state.address);
+
+		} else {
+
+			/* Calculate the bounds of the specified portion. */
+			const cldiStrDualMarker_t _marks =
+				cldiStr_AbsoluteBoundsInOrigin(self, __beg, __end);
+			if (_marks.error != 0) {
+				/* ERR: ERROR WHILE MARKING BOUNDARIES */
+				return _marks.error;
+			}
+			/* Area contains no data */
+			else if (_marks.p1 == _marks.p2 || _marks.p2 == 0) {
+				/* ERR: SPECIFIED AREA CONTAINS NO DATA */
+				return 1;
+			}
+			/* Else finding those two points was successful,
+			.  remember the size of the data portion that is
+			.  going to be copied. */
+			else return cldiCopyBytes(
+				_marks.p2 - _marks.p1, __sv, self->origin_state.address + _marks.p1);
+		}
+	}
+	int
+	cldiStr_ExportOriginSnippetTo(const cldiStr * self, ssize_t __end, char * __sv)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+		return cldiStr_ExportOriginPortionTo(self, 0, __end, __sv);
+	}
+	int
+	cldiStr_ExportOriginTo(const cldiStr * self, char * __sv)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+		return cldiStr_ExportOriginPortionTo(self, 0, -1, __sv);
+	}
+
+	int
+	cldiStr_ExportDataPortionTo(
+		const cldiStr * self,
+		ssize_t     __beg,
+		ssize_t     __end,
+		char          * __sv)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+		/* Check for a modifiable state, else try the origin. */
+		else if (!cldiStr_HasModifiableState(self))
+			return cldiStr_ExportOriginPortionTo(self, __beg, __end, __sv);
+
+		/* If the beginning is 0 (doesn't require any calculation) */
+		if (__beg == 0) {
+			/* The size of the portion to be copied from the beginning. */
+			const size_t portion_size = cldiStr_OffsetOf(self, __end);
+			if (portion_size == 0) {
+				/* ERR: SPECIFIED AREA CONTAINS NO DATA */
+				return 1;
+			}
+
+			return cldiCopyBytes(portion_size, __sv, self->modifiable_state_address);
+
+		} else {
+
+			/* Calculate the bounds of the specified portion. */
+			const cldiStrDualMarker_t _marks =
+				cldiStr_AbsoluteBoundsOf(self, __beg, __end);
+			if (_marks.error != 0) {
+				/* ERR: ERROR WHILE MARKING BOUNDARIES */
+				return _marks.error;
+			}
+			/* Area contains no data */
+			else if (_marks.p1 == _marks.p2 || _marks.p2 == 0) {
+				/* ERR: SPECIFIED AREA CONTAINS NO DATA */
+				return 1;
+			}
+			/* Else finding those two points was successful,
+			.  remember the size of the data portion that is
+			.  going to be copied. */
+			else return cldiCopyBytes(
+				_marks.p2 - _marks.p1, __sv, self->modifiable_state_address + _marks.p1);
+		}
+	}
+	int
+	cldiStr_ExportDataSnippetTo(
+		const cldiStr * self,
+		ssize_t     __end,
+		char          * __sv)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+		return cldiStr_ExportDataPortionTo(self, 0, __end, __sv);
+	}
+	int
+	cldiStr_ExportDataTo(const cldiStr * self, char * __sv)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+		return cldiStr_ExportDataPortionTo(self, 0, -1, __sv);
+	}
+
+	int
+	cldiStr_SaveOriginAs(const cldiStr * self, cldiStr * __sv)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+		if (!cldiStr_HasOriginState(self)) {
+			/* ERR: NO ORIGIN STATE */
+			return 1;
+		}
+
+		if (cldiStr_HasModifiableState(__sv)) {
+			if (cldiStr_ReturnToOrigin(__sv) != 0) {
+				/* ERR: FAILED TO REMOVE DATA */
+				return 1;
+			}
+		} else {
+			__sv->current_character_type   = CLDI_CHARTYPE_NONE;
+			__sv->modifiable_state_address = NULL;
+			__sv->initialized_length       = 0;
+			__sv->character_count          = 0;
+		}
+
+		const size_t data_size = cldiMemBlockSize(self->origin_state.address);
+
+		char *const allocated_text = cldiMemReserveText(data_size, CLDIMEM_VISIBLE);
+		if (allocated_text == NULL) {
+			/* ERR: FAILED TO ALLOCATED TEXT FOR ORIGIN */
+			return 1;
+		} else if (cldiCopyBytes(data_size, allocated_text, self->origin_state.address) != 0) {
+			/* ERR: FAILED TO COPY ORIGIN */
+			return 1;
+		} else if (cldiMemConfirm(allocated_text) != 0) {
+			/* ERR: FAILED TO CREATE COPY OF ORIGIN */
+			return 1;
+		}
+
+		__sv->modifiable_state_address = allocated_text;
+		__sv->initialized_length       = data_size;
+		__sv->character_count          = self->origin_state.char_count;
+		__sv->current_character_type   = self->origin_state.type;
+
+		return 0;
+	}
+	int
+	cldiStr_ShareOrigin(const cldiStr * self, cldiStr * __share, bool __new)
+	{}
+	int
+	cldiStr_SaveDataAs(const cldiStr * self, cldiStr * __sv)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+		/* If there is no modifiable data, try the origin. */
+		if (!cldiStr_HasModifiableState(self))
+			return cldiStr_SaveOriginAs(self, __sv);
+
+		if (cldiStr_HasModifiableState(__sv)) {
+			if (cldiStr_ReturnToOrigin(__sv) != 0) {
+				/* ERR: FAILED TO REMOVE CURRENT DATA */
+				return 1;
+			}
+		} else {
+			__sv->current_character_type   = CLDI_CHARTYPE_NONE;
+			__sv->modifiable_state_address = NULL;
+			__sv->initialized_length       = 0;
+			__sv->character_count          = 0;
+		}
+
+		const size_t data_size = self->initialized_length;
+
+		char *const allocated_text = cldiMemReserveText(data_size, CLDIMEM_VISIBLE);
+		if (allocated_text == NULL) {
+			/* ERR: FAILED TO ALLOCATED SPACE */
+			return 1;
+		} else if (cldiCopyBytes(data_size, allocated_Text, self->modifiable_state_address) != 0) {
+			/* ERR: FAILED TO COPY DATA */
+			return 1;
+		} else if (cldiMemConfirm(allocated_text) != 0) {
+			/* ERR: FAILED TO CREATE MODIFYABLE STATE */
+			return 1;
+		}
+
+		__sv->modifiable_state_address = allocated_text;
+		__sv->initialized_length       = data_size;
+		__sv->character_count          = self->character_count;
+		__sv->current_character_type   = self->current_character_type;
+
+		return 0;
+	}
+	int
+	cldiStr_SaveDataAsOrigin(const cldiStr * self, cldiStr * __sv)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+
+	}
+
+	int
+	cldiStr_SaveAs(const cldiStr * self, cldiStr * __sv, bool __force)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+		return 1;
+	}
+
+	int
+	cldiStr_StartFromOrigin(cldiStr * self)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+		return cldiStr_ExpandFromOrigin(self, 0);
+	}
+	int
+	cldiStr_ExpandFromOrigin(cldiStr * self, size_t __extra)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+		if (!cldiStr_HasOriginState(self)) {
+			/* ERR: NO VALID ORIGIN */
+			return 1;
+		}
+
+		if (cldiStr_HasModifiableState(self)) {
+			if (cldiStr_DropData(self) != 0) {
+				/* ERR: COULD NOT REMOVE CURRENT MODIFYABLE STATE */
+				return 1;
+			}
+		}
+
+		/* Store the full size of the origin state. */
+		const size_t origin_size    = cldiMemBlockSize(self->origin_state.address);
+		/* Calculate and store the full size of the modifiable expansion state to be
+		.  created. */
+		const size_t expansion_size = (__extra == 0)?  origin_size :
+			origin_size + (__extra * CLDI_CHARTYPE_SIZEOF(self->origin_state.type));
+
+		/* Allocate memory for the new state. */
+		char *const expansion_state = cldiMemReserveText(expansion_size);
+		/* Make sure allocation succeeded. */
+		if (expansion_state == NULL) {
+			/* ERR: FAILED TO RESERVE MEMORY FOR NEW STATE. */
+			return 1;
+		}
+		/* Make sure copying succeeds. */
+		else if (cldiCopyBytes(origin_size, expansion_state, self->origin_state.address) != 0) {
+			/* ERR: FAILED TO CREATE NEW STATE */
+			return 1;
+		}
+
+		self->modifiable_state_address = expansion_state;
+		self->initialized_length       = expansion_size;
+		self->current_character_type   = self->origin_state.type;
+		self->character_count          = self->origin_state.char_count;
+
+		return 0;
+	}
+
+
+/* String Manipulation */
+
+	int
+	cldiStr_AppendStringAt(
+		cldiStr         * self,
+		CLDI_CHARTYPE     __type,
+		ssize_t       __idx,
+		size_t        __len,
+		const char *const __str)
+	{
+		if (self == NULL) {
+			/* ERR: NULL REFERENCE */
+			return 1;
+		}
+
+		size_t str_offset = 0;
+
+		const size_t full_str_length = cldiStrSize(__type, __len, __str);
+
+		/* Create new state with appended data. */
+		if (!cldiStr_HasModifiableState(self)) {
+			if (!cldiStr_HasOriginState(self)) {
+				/* ERR: NO VALID STATE TO APPEND TO */
+				return 1;
+			} else if (!CLDI_CHARTYPE_CAN_TRANSENCODE(self->origin_state.type, __type)) {
+				/* ERR: CANNOT TRANS-ENCODE STRING */
+				return 1;
+			}
+
+			/* Try to allocate data for the origin, error if that fails. */
+			if (cldiStr_AllocateData(self, cldiMemBlockSize(self->origin_state.address)
+					+ full_str_length) != 0) {
+				/* ERR: COULD NOT ALLOCATE MEMORY FOR NEW STATE */
+				return 1;
+			}
+
+			str_offset = cldiStr_AbsolutePositionInOrigin(__idx);
+
+			if(
+				( cldiCopyBytes(
+					str_offset,
+					self->modifiable_state_address,
+					self->origin_state.address) != 0
+				) ||
+				( cldiConvertStringEncoding(
+					__len,
+					self->modifiable_state_address+str_offset,
+					__str)
+				)
+			)
+		}
+		/* Append to already existing data. */
+		else {
+
+		}
+	}
+
+
+/* ----------------------------------- */
+
+
+
+#ifdef __cplusplus
+}
+#endif
