@@ -1,0 +1,114 @@
+
+.                       --- C Language Designed for Independence ---                           #
+.                                   (version 24.1 rev 0)                                       #
+.                                                                                              #
+.                                                                                              #
+.                            Preamble and Introductory Articles                                #
+.                                                                                              #
+.     Abbreviated as "CLDI", the ecosystem, programming language (and/or extension of          #
+. another), standard library, and related software such as a highly configurable and           #
+. modular compiler with it's own tree-like compilation pipeline with compatibility with        #
+. LLVM, a robust optional runtime environment, and compatibility layers with other parts       #
+. of the Ciahlldi ecosystem (CSECL) that may be written partially, or even entirely in         #
+. code for the CLDI compiler(s). CLDI code shall be designed on-top of the syntax of C and     #
+. C++ themselves, with the introduction of more programming formats for better support of      #
+. more advanced, or higher-level, especially compile-time features. Beyond this however,       #
+. the "C Language Designed for Independence" is more than just this. Programming and           #
+. Information Science should never be only focused on the digital, the real, and the           #
+. pragmatic, but should also be focused on the abstract concepts that code elements are        #
+. placed in their language to represent, and the ways of using, understanding, measuring       #
+. and instructing those concepts that are represented through code actions. The idea of        #
+. CLDI, and this document, acting as CLDI's "Standard Document" (as it will be referred        #
+. to), detailing what CLDI is, and directing all code, development and maintenance of it       #
+. in how it shall look, function and what features and attributes of the ecosystem and         #
+. standard itself that come with it, are intended to focus very commonly on both the actual    #
+. implementation of any given attribute of the ecosytem (if it has any implementation,         #
+. usually code), and, of course, a detailed description of why it exists, how it ties in to    #
+. everything, and what it proposes and imposes.                                                #
+.                                                                                              #
+. More than a Standard Document for a collection of fundamental extensions to modern           #
+. programming environments and architectures to provide central safety and further             #
+. expansion for programming capabilites, the CLDI Standard is a constitution of proposals,     #
+. articles, and figures to bring more innovation and "inter-standing" to our programming       #
+. structures and intercompatibility.                                                           #
+.                                                                                              #
+.                                    Document Structure                                        #
++---------------------+                                                                        #
+|   Chapter ...:      |  Chapters and Sections: Chapters are a way of organizing the           #
+|     Section ...:    |  document and its ideas by where they belong in its reach. For         #
+|       Article ...:  |  instance, Chapter 1 is about the mission, goals, ideals, and codes    #
+|       Figure ...:   |  of conduct for CLDI development, and CLDI "Standard Assets" (this     #
+|     Section ...:    |  document, the codes of conduct, articles and proposals of this        #
++---------------------+  document themselves, and anything deemed "official" and either a      #
+. part thereof, or an official tenet, proposal, derivation, or demonstration or example        #
+. thereof), as they will be referred to, or, as another example, Chapter 2 is all about the    #
+. standard library of the CLDI language, compiler features, and other related subjects.        #
+. Sections may have "Subsections" which would be a further division of a section, while a      #
+. "Supersection" would detail a shared connection or topic between a number of sections        #
+. within a chapter.                                                                            #
++---------------------------+  Articles, Proposals, and Figures: "Articles" can be thought     #
+|   Section 4.x:            |  of as a statement, description, background information, or a    #
+|     Article 1.1:          |  ruling or commandment of the document, as opposed to            #
+|       a) ...              |  a proposal of implementation in some way. Additionally,         #
+|       b) ...              |  "Figures" are usually some bridge into a visual                 #
+|     Article 1.2:          |  demonstration (or image), or any other description that is      #
+|       ...                 |  required for this document to be complete in its descriptions   #
+|     Proposal CIP-C800:    |  and declarations. Finally, "Proposals" are just that, a         #
+|       ...                 |  proposal for some update, upgrade, regression or progression,   #
+|     Figure 1-1            |  addition to or negation from, or even integration or            #
+|       (some visual or     |  seggregation with the implementation of CLDI code, any type     #
+|       discription to show |  of "code", "script", or "language" for any related tenet of     #
+|       as a figurative)... |  CLDI, or any other proposal for better development that is      #
++---------------------------+  ammended to this document officially, and can be constituted    #
+. by, in turn, multiple other Articles, Figures, and even "subproposals", that would           #
+. introduce "backseated", removable proposals under the context of another.                    #
+.                                                                                              #
+.                                       Definitions                                            #
+.                                                                                              #
+.     Some terms that would otherwise be too ambiguous should be clearly defined for the       #
+. rest of the document, and some of them have been used already in other Introductory          #
+. Articles:                                                                                    #
+.                                                                                              #
+. "Standard Document" shall mean:                                                              #
+. A document that establishes and/or proposes, a mission statement, constitution of ideas,     #
+. and/or standardization protocol of information science and/or computer code, even if no      #
+. actual code is present, as this term shall describe a document, that would direct,           #
+. detail, and solidify a theory and/or implementation for some imperative need, or             #
+. computational or informational standardization project. This document would also very        #
+. often be established as an arbitor of what is official and/or valid as any given part of     #
+. a project, theory, or constitution serving its function, following its protocol, and         #
+. staying in its place.                                                                        #
+.                                                                                              #
+. "Standard Asset(s)" shall mean:                                                              #
+. A Standard Document, any article thereof, or any "Computational Artifact" that may serve     #
+. as an asset to the adherence to any part of the Standard Document itself (which shall        #
+. bear the term of "Standard Dependency Artifact", and may be featured in the context of       #
+. referencing a specific version, module or Contribution thereof, or any array of such).       #
+.                                                                                              #
+. "Standard Dependency Artifact" shall mean:                                                   #
+. A Computational Artifact, such as code in "Binary Code Form" of some version, or some        #
+. module thereof, or code in "Source Code Form" of some version, or any file or portion        #
+. thereof, that acts as a requirement or common inclusion or integration with the proper       #
+. adherence to the Standard Document thereof.                                                  #
+.                                                                                              #
+. "Computational Artifact" shall mean:                                                         #
+.                                                                                              #
+. "Source Code Form" shall mean:                                                               #
+.                                                                                              #
+. "Binary Code Form" shall mean:                                                               #
+.                                                                                              #
+.                                                                                              #
+.                                                                                              #
+.                                   --- Chapter Table ---                                      #
+.                                                                                              #
+.     Chapter 1: Principles, Origins, the Now, the Current Problem, and a Proposed Solution    #
+.     Chapter 2: Additions to the Languages and Combined Ecosystem of C, C++, and Descendants  #
+.     Chapter 3: Top-Level Implementation of Official Package Releases and Associated Packages #
+.                                                                                              #
+.                                                                                              #
+.                                                                                              #
+.                                       Chapter 1  - EST                                       #
+.         "Principles, Origins, the Now, the Current Problem, and a Proposed Solution"         #
+.                                                                                              #
+.                                                                                              #
+.  Section 1: 

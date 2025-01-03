@@ -1,0 +1,1 @@
+These files are meant to be rendered/read as Markdown (.md) files.
