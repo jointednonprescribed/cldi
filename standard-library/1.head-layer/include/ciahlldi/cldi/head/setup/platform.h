@@ -1,150 +1,208 @@
 
-#ifndef _cldi__setup_PLATFORM_H
-#define _cldi__setup_PLATFORM_H 1
+#ifndef _cldi_head__setup_PLATFORM_H
+#define _cldi_head__setup_PLATFORM_H 1
 
-#include "prerequisites.h"
+#include "../settings.h"
+
+
+
+/* Platform Information types */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* Platform Selection enum */
+typedef enum _CLDIPLATFORM
+{
+	CLDI_PLATFORM_UNKNOWN=0,
+	CLDI_WINDOWS,
+	CLDI_LINUX,
+	CLDI_OSX,
+	CLDI_BSD,
+	CLDI_ANDROID,
+	CLDI_IOS,
+	CLDI_WASM,
+} cldiplatform_t;
 
+/* Compiler Selection enum */
+typedef enum _CLDICOMPILER
+{
+	CLDI_UNKNOWN_COMPILER=0,
+	CLDI_GCC,
+	CLDI_MSVC,
+	CLDI_CLANG,
+	CLDI_WASM_COMPILER,
+	CLDI_WASM_COMP=CLDI_WASM_COMPILER,
+} cldicompiler_t;
 
-/* Arhitecture Enumeration Types */
-#include "platform/architecture_ENUM.h"
-/* Data Model Enumeration Types */
-#include "platform/cpudm_ENUM.h"
-/* Platform & Arhitecture Width Enumeration Types */
-#include "platform/platform_ENUM.h"
-
-/* Detect CPU architecture. */
-#include "platform/architecture.h"
-/* Detect CPU Data Model. */
-#include "platform/data-model.h"
-/* Detect the current platform. */
-#if defined(__CLDI_PLATFORM) && __CLDI_PLATFORM == CLDI_PLATFORM_UNKNOWN
-#	include "platform/stdlib.h"
-#elif defined(_WIN32) || (defined(__CLDI_PLATFORM) && __CLDI_PLATFORM == CLDI_PLATFORM_WINDOWS)
-#	include "platform/windows.h"
-#elif (defined(_WORDSIZE) && (defined(__linux__) || defined(__ANDROID__))) || (defined(__CLDI_PLATFORM) && (__CLDI_PLATFORM==CLDI_PLATFORM_LINUX||__CLDI_PLATFORM==CLDI_PLATFORM_ANDROID))
-#	include "platform/linux.h"
-#elif (defined(_WORDSIZE) && (defined(macintosh) || defined(Macintosh) || (defined(__APPLE__) && defined(__MACH__)))) || (defined(__CLDI_PLATFORM) && __CLDI_PLATFORM == CLDI_PLATFORM_MACOS)
-#	include "platform/macos.h"
-#elif (defined(_WORDSIZE) && defined(__FreeBSD__)) || (defined(__CLDI_PLATFORM) && __CLDI_PLATFORM == CLDI_PLATFORM_FREEBSD)
-#	include "platform/bsd/freebsd.h"
-#elif (defined(_WORDSIZE) && defined(__NetBSD__))  || (defined(__CLDI_PLATFORM) && __CLDI_PLATFORM == CLDI_PLATFORM_NETBSD)
-#	include "platform/bsd/netbsd.h"
-#elif (defined(_WORDSIZE) && defined(__OpenBSD__)) || (defined(__CLDI_PLATFORM) && __CLDI_PLATFORM == CLDI_PLATFORM_OPENBSD)
-#	include "platform/bsd/openbsd.h"
-#elif (defined(_WORDSIZE) && (defined(__unix) || defined(__unix__))) || (defined(__CLDI_PLATFORM) && __CLDI_PLATFORM == CLDI_PLATFORM_UNIX)
-#	pragma warn("CLDI: head:setup/platform: CLDI could not detect or does not explicitly support the current (unix-like) platform, attempting to load with awareness of Unix-like functionality alone.")
-#	include "platform/unix.h"
-#else
-#	pragma warn("CLDI: head:setup/platform: CLDI could not detect or does not explicitly support the current platform, attempting to load with the C library alone.")
-#	include "platform/stdlib.h"
-#endif
-#ifndef __CLDI_PLATFORM
-#	define __CLDI_PLATFORM CLDI_PLATFORM_UNKNOWN
-#endif
-#ifndef _cldi_USING_GLIBC
-#	if (defined(__GNU_LIBRARY__) && defined(__GNU_LIBRARY_MINOR__)) || (defined(__GLIBC__) && defined(__GLIBC_MINOR__))
-#		define _cldi_USING_GLIBC true
-#	else
-#		define _cldi_USING_GLIBC false
-#	endif
-#endif
-#ifndef __CLDI_PLATFORM_UNIXLIKE
-#	define __CLDI_PLATFORM_UNIXLIKE false
-#endif
-#ifndef _cldi_BSD_PLATFORM
-#	define _cldi_BSD_PLATFORM false
-#endif
-
-
+/* Architecture Selection enum */
+typedef enum _CLDIARCHITECTURE
+{
+	CLDI_UNKNOWN_ARCHITECTURE=0,
+	CLDI_UNKNOWN_ARCH=CLDI_UNKNOWN_ARCHITECTURE,
+	CLDI_X86,
+	CLDI_x86 = CLDI_X86,
+	CLDI_ARM,
+	CLDI_POWERPC,
+	CLDI_PPC = CLDI_POWERPC,
+	CLDI_WASM_ARCH,
+} cldiarch_t;
 
 #ifdef __cplusplus
 }
-
-namespace ciahlldi
-{
-	namespace cldi
-	{
-		/* Import C code elements to C++ namespace */
-
-		/* A field for whether or not the GNU C Library is present. */
-		constexpr bool USING_GLIBC          = _cldi_USING_GLIBC;
-		/* A field for whether or not the current platform is Unix-like. */
-		constexpr bool PLATFORM_IS_UNIXLIKE = __CLDI_PLATFORM_UNIXLIKE;
-		/* A field for whether or not the current platform is a BSD platform. */
-		constexpr bool PLATFORM_IS_BSD      = _cldi_BSD_PLATFORM;
-
-		/* Platform flag enum */
-		typedef CLDI_PLATFORM PLATFORM;
-
-		/* A flag constant for the detected architecture width. */
-		constexpr PLATFORM DETECTED_PLATFORM = __CLDI_PLATFORM;
-
-		constexpr PLATFORM PLATFORM_WINDOWS  = CLDI_PLATFORM_WINDOWS;
-			/* Platform flag for Windows systems. */
-		constexpr PLATFORM PLATFORM_MAC      = CLDI_PLATFORM_MAC;
-			/* Platform flag for MacOS. */
-		constexpr PLATFORM PLATFORM_LINUX    = CLDI_PLATFORM_LINUX;
-			/* Platform flag for Linux systems. */
-		constexpr PLATFORM PLATFORM_ANDROID  = CLDI_PLATFORM_ANDROID;
-			/* Platform flag for Android devices. */
-		constexpr PLATFORM PLATFORM_FREEBSD  = CLDI_PLATFORM_FREEBSD;
-			/* Platform flag for any FreeBSD systems. */
-		constexpr PLATFORM PLATFORM_NETBSD   = CLDI_PLATFORM_NETBSD;
-			/* Platform flag for any NetBSD systems. */
-		constexpr PLATFORM PLATFORM_OPENBSD  = CLDI_PLATFORM_OPENBSD;
-			/* Platform flag for any OpenBSD systems. */
-		constexpr PLATFORM PLATFORM_UNIX     = CLDI_PLATFORM_UNIX;
-			/* Platform flag for any other unix or unix-like system. */
-		constexpr PLATFORM PLATFORM_UNKNOWN  = CLDI_PLATFORM_UNKNOWN;
-
-		/* Architecture width enum */
-		typedef CLDI_ARCHSIZE ARCHSIZE;
-
-		/* A flag constant for the detected architecture width. */
-		constexpr ARCHSIZE DETECTED_ARCHSIZE = __CLDI_ARCHSIZE;
-
-		constexpr ARCHSIZE PLATFORM_64BIT    = CLDI_PLATFORM_64BIT;
-			/* Flag for 64-bit systems. */
-		constexpr ARCHSIZE PLATFORM_32BIT    = CLDI_PLATFORM_32BIT;
-			/* Flag for 32-bit systems. */
-
-
-		/* Architecture flag enum */
-		typedef CLDI_ARCHITECTURE ARCHITECTURE;
-
-		/* A flag constant for the detected architecture. */
-		constexpr ARCHITECTURE DETECTED_ARCHITECTURE = __CLDI_ARCHITECTURE;
-
-		constexpr ARCHITECTURE ARCH_X86   = CLDI_ARCH_X86;
-			/* Architecture flag for x86 and AMD64 systems. */
-		constexpr ARCHITECTURE ARCH_ARM   = CLDI_ARCH_ARM;
-			/* Architecture flag for ARM systems. */
-		constexpr ARCHITECTURE ARCH_ALPHA = CLDI_ARCH_ALPHA;
-			/* Architecture flag for Alpha-based systems. */
-
-		/* CPU Data Model flag enum */
-		typedef CLDI_CPUDM CPUDM;
-		using   CPU_DATA_MODEL = CLDI_CPUDM;
-
-		/* A flag constant for the detected processor data model. */
-		constexpr CPUDM DETECTED_CPU_DATA_MODEL = __CLDI_CPUDM;
-
-		constexpr CPUDM CPUDM_LP32  = CLDI_CPUDM_LP32;
-			/* Flag for LP32 processors. */
-		constexpr CPUDM CPUDM_ILP32 = CLDI_CPUDM_ILP32;
-			/* Flag for ILP32 processors. */
-		constexpr CPUDM CPUDM_LP64  = CLDI_CPUDM_LP64;
-			/* Flag for LP64 processors. */
-		constexpr CPUDM CPUDM_XLP64 = CLDI_CPUDM_XLP64;
-			/* Flag for LLP64, ILP64, and SLP64 processors. */
-	}
-}
-
 #endif
 
-#endif /* _cldi__setup_PLATFORM_H */
+
+/* Detect Windows System */
+#ifdef _WIN32
+#	define CLDI_PLATFORM_UNIXLIKE  false
+#	define CLDI_PLATFORM           CLDI_WINDOWS
+#	ifdef _WIN64
+#		define CLDI_PLATFORM32 false
+#	else
+#		define CLDI_PLATFORM32 true
+#	endif
+
+/* Detect Linux System */
+#elif defined(__linux) || defined(__linux__) || defined(__gnu_linux__)
+#	define CLDI_PLATFORM_UNIXLIKE true
+	/* Detect Android System. */
+#	ifdef __ANDROID__
+#		define CLDI_PLATFORM CLDI_ANDROID
+#	else
+#		define CLDI_PLATFORM CLDI_LINUX
+#	endif
+#	if !defined (__WORDSIZE) || __WORDSIZE == 64
+#		define CLDI_PLATFORM32 false
+#	else
+#		define CLDI_PALTFORM32 true
+#	endif
+
+/* Detect OSX System */
+#elif defined(__APPLE__) && defined(__MACH__)
+#	define CLDI_PLATFORM_UNIXLIKE true
+#	define CLDI_PLATFORM          CLDI_OSX
+#	if !defined (__WORDSIZE) || __WORDSIZE == 64
+#		define CLDI_PLATFORM32 false
+#	else
+#		define CLDI_PALTFORM32 true
+#	endif
+
+/* Detect BSD System */
+#elif defined(__bsd__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)
+#	define CLDI_PLATFORM_UNIXLIKE true
+#	define CLDI_PLATFORM          CLDI_BSD
+#	if !defined (__WORDSIZE) || __WORDSIZE == 64
+#		define CLDI_PLATFORM32 false
+#	else
+#		define CLDI_PALTFORM32 true
+#	endif
+
+/* Detect Other System */
+#elif defined(__unix) || defined(__unix__)
+#	define CLDI_PLATFORM_UNIXLIKE true
+#	define CLDI_PLATFORM          CLDI_UNIX
+#	if !defined (__WORDSIZE) || __WORDSIZE == 64
+#		define CLDI_PLATFORM32 false
+#	else
+#		define CLDI_PALTFORM32 true
+#	endif
+
+/* Detect Browser-Integrated C/C++ WebAssembly Target */
+
+/* Unsupported platform, so throw error. */
+#else
+#	define CLDI_PLATFORM          CLDI_UNKNOWN_PLATFORM
+#	define CLDI_PLATFORM32        false
+#	define CLDI_PLATFORM_UNIXLIKE false
+#	error "CLDI: Compiling on an unsupported or unrecognized platform, terminating compilation..."
+#endif
+
+#if !defined(CLDI_COMPILER) || CLDI_COMPILER != CLDI_WASM_COMP
+/* Detect GCC */
+#	ifdef __GNUC__
+#		define CLDI_COMPILER CLDI_GCC
+
+/* Detect Microsoft Visual C/C++ */
+
+
+/* Detect CLang */
+#	elif defined(__clang__)
+#		define CLDI_COMPILER CLDI_CLANG
+
+/* Detect WebAssembly Compiler */
+
+/* Unsupported compiler, so throw a warning. */
+#	else
+#		define CLDI_COMPILER CLDI_UNKNOWN_COMPILER
+#		pragma warn("CLDI: Warning - Compiling with an unrecognized compiler...")
+#	endif
+#endif
+
+#if !defined(CLDI_ARCH) || CLDI_ARCH != CLDI_WASM_ARCH
+/* Detect x86 Architecture */
+#	if defined(__i386__) || defined(__amd64__) || defined(__x86__) || defined(__x86_64__)
+#		define CLDI_ARCH CLDI_X86
+
+/* Detect ARM Architecture */
+#	elif defined(__arm__) || defined(__aarch64__)
+#		define CLDI_ARCH CLDI_ARM
+
+/* Detect PowerPC Architecture */
+#	elif defined(__ppc64__) || defined(__powerpc__)
+#		define CLDI_ARCH CLDI_POWERPC
+
+/* Unsupported architecture, so throw an error. */
+#	else
+#		define CLDI_ARCH CLDI_UNKNOWN_ARCHITECTURE
+#		error "CLDI: Compiling for unsupported or unrecognized CPU architecture, terminating compilation..."
+#	endif
+#endif
+
+
+
+/* C++ bindings for this file: */
+#if CLDI_C_ONLY == false
+namespace cldi
+{
+	using platform_t = cldiplatform_t;
+	constexpr platform_t UNKNOWN_PLATFORM     = CLDI_UNKNOWN_PLATFORM;
+	constexpr platform_t WINDOWS              = CLDI_WINDOWS;
+	constexpr platform_t LINUX                = CLDI_LINUX;
+	constexpr platform_t OSX                  = CLDI_OSX;
+	constexpr platform_t BSD                  = CLDI_BSD;
+	constexpr platform_t ANDROID              = CLDI_ANDROID;
+	constexpr platform_t IOS                  = CLDI_IOS;
+	constexpr platform_t WASM                 = CLDI_WASM;
+
+	using compiler_t = cldicompiler_t;
+	constexpr compiler_t UNKNOWN_COMPILER     = CLDI_UNKNOWN_COMPILER;
+	constexpr compiler_t UNKNOWN_COMP         = CLDI_UNKNOWN_COMPILER;
+	constexpr compiler_t GCC                  = CLDI_GCC;
+	constexpr compiler_t MSVC                 = CLDI_MSVC;
+	constexpr compiler_t CLANG                = CLDI_CLANG;
+	constexpr compiler_t WASM_COMPILER        = CLDI_WASM_COMPILER;
+	constexpr compiler_t WASM_COMP            = CLDI_WASM_COMPILER;
+
+	using arch_t = cldiarch_t;
+	constexpr arch_t     UNKNOWN_ARCHITECTURE = CLDI_UNKNOWN_ARCHITECTURE;
+	constexpr arch_t     UNKNOWN_ARCH         = CLDI_UNKNOWN_ARCHITECTURE;
+	constexpr arch_t     x86                  = CLDI_X86;
+	constexpr arch_t     X86                  = CLDI_X86;
+	constexpr arch_t     ARM                  = CLDI_ARM;
+	constexpr arch_t     POWERPC              = CLDI_POWERPC;
+	constexpr arch_t     PPC                  = CLDI_POWERPC;
+	constexpr arch_t     WASM_ARCH            = CLDI_WASM_ARCH;
+
+	constexpr bool       PLATFORM_UNIXLIKE    = CLDI_PLATFORM_UNIXLIKE;
+	constexpr bool       PLATFORM32           = CLDI_PLATFORM32;
+	constexpr platform_t PLATFORM             = CLDI_PLATFORM;
+	constexpr compiler_t COMPILER             = CLDI_COMPILER;
+	constexpr arch_t     ARCHITECTURE         = CLDI_ARCH;
+}
+#endif
+
+
+
+#endif // _cldi_head__setup_PLATFORM_H

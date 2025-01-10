@@ -3,24 +3,27 @@
 #define _cldi_head_ 1
 #define __cldi__    1
 
-/* Setup CLDI module "head", and thus,
-.  CLDI itself. */
-#include "head/version.h"
+
+
+/* Header Load Order:
+ * 
+ *   settings.h
+ *    |
+ *   setup.h --- platform.h
+ *    |           |
+ *    |          includes.h
+ *    |           |
+ *    |          stat.h
+ *    |           |
+ *    |          types.h
+ *    +-----------+
+ * 
+ *  The last header may be included alone, as it will include all other headers
+ *  in chain.
+ */
+
 #include "head/setup.h"
-#include "head/NS_DECL.hpp"
 
-
-
-/* Included Headers */
-
-/* "macros" : Essential macros containing keywords. */
-#include "head/macros.h"
-
-/* "types" : All different types for different purposes declared inside of this layer. */
-#include "head/types.h"
-
-/* "basics" : Basic declarations for CLDI head layer. */
-//#include "head/basics.h"
 
 
 
