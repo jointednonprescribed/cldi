@@ -90,25 +90,3 @@
 . module thereof, or code in "Source Code Form" of some version, or any file or portion        #
 . thereof, that acts as a requirement or common inclusion or integration with the proper       #
 . adherence to the Standard Document thereof.                                                  #
-.                                                                                              #
-. "Computational Artifact" shall mean:                                                         #
-.                                                                                              #
-. "Source Code Form" shall mean:                                                               #
-.                                                                                              #
-. "Binary Code Form" shall mean:                                                               #
-.                                                                                              #
-.                                                                                              #
-.                                                                                              #
-.                                   --- Chapter Table ---                                      #
-.                                                                                              #
-.     Chapter 1: Principles, Origins, the Now, the Current Problem, and a Proposed Solution    #
-.     Chapter 2: Additions to the Languages and Combined Ecosystem of C, C++, and Descendants  #
-.     Chapter 3: Top-Level Implementation of Official Package Releases and Associated Packages #
-.                                                                                              #
-.                                                                                              #
-.                                                                                              #
-.                                       Chapter 1  - EST                                       #
-.         "Principles, Origins, the Now, the Current Problem, and a Proposed Solution"         #
-.                                                                                              #
-.                                                                                              #
-.  Section 1: 
