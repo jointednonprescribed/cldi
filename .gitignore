@@ -17,7 +17,7 @@
 bin/*
 
 # CMake Files/Directories
-cmake_install.cmake_install
+cmake_install.cmake
 CMakeCache.txt
 GITCHANGES.md
 Makefile
