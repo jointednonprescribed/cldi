@@ -1,7 +1,6 @@
 
 # Workspace Directories
 .vscode/*
-.ide-ease/*
 # Workspace Formats
 *.code-workspace
 
@@ -13,3 +12,13 @@
 *.so
 *.obj
 *.o
+
+# Binary Directories
+bin/*
+
+# CMake Files/Directories
+cmake_install.cmake_install
+CMakeCache.txt
+GITCHANGES.md
+Makefile
+CMakeFiles/*

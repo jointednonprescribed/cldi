@@ -1,0 +1,213 @@
+
+#ifndef _cldi_head__setup_TYPES_HPP
+#define _cldi_head__setup_TYPES_HPP 1
+
+#ifndef _cldi_head__setup_TYPES_H
+#	include "../types.h"
+#endif
+
+#if CLDI_C_ONLY == false
+
+
+
+namespace cldi
+{
+	using pid_t = ::cldipid_t;
+
+	inline pid_t (&GetCurrentPID)() = cldiGetCurrentPID;
+
+	using floatmax_t    = ::cldifpm_t;
+	using fpm_t         = ::cldifpm_t;
+
+	using TYPE_TEMPL    = ::CLDI_TYPE_TEMPL;
+	using TYPE_TEMPLATE = ::CLDI_TYPE_TEMPL;
+	constexpr TYPE_TEMPL TYPE_TEMPL_NULL = ::CLDI_NULL_TYPE;
+	constexpr TYPE_TEMPL TYPE_TEMPL_INTEGER = ::CLDI_INTEGER_TYPE;
+	constexpr TYPE_TEMPL TYPE_TEMPL_INT = ::CLDI_INTEGER_TYPE;
+	constexpr TYPE_TEMPL TYPE_TEMPL_FLOAT = ::CLDI_FLOAT_TYPE;
+	constexpr TYPE_TEMPL TYPE_TEMPL_PTR = ::CLDI_PTR_TYPE;
+	constexpr TYPE_TEMPL TYPE_TEMPL_STRUCT = ::CLDI_STRUCT_TYPE;
+
+	using _gtypeinfo_t  = ::clditypeinfo_t;
+	template <typename _T>
+	class typeinfo_t
+	{
+	protected:
+		const _gtypeinfo_t generic;
+
+	public:
+
+		/* Detect the correct type template from the given type argument. */
+		constexpr static TYPE_TEMPL FindTypeTemplate()
+		{
+			if (std::is_integral_v<_T>) {
+				return TYPE_TEMPL_INT;
+			} else if (std::is_floating_point_v<_T>) {
+				return TYPE_TEMPL_FLOAT;
+			} else if (std::is_pointer_v<_T>) {
+				return TYPE_TEMPL_PTR;
+			} else if (std::is_class_v<_T>) {
+				return TYPE_TEMPL_STRUCT;
+			} else { 
+				return TYPE_TEMPL_NULL;
+			}
+		}
+		/* Store detected template from type argument in public static constexpr
+		.  variable. */
+		constexpr static TYPE_TEMPL TEMPLATE = FindTypeTemplate();
+
+		/* Sole Constructor: Use detected options for the given type argument. */
+		typeinfo_t():
+			generic({.size=(std::is_void<_T>::value)? 0 : sizeof(_T), .templ=TEMPLATE})
+		{}
+
+		size_t Size() const
+		{
+			return generic.size;
+		}
+		TYPE_TEMPL Template() const
+		{
+			return generic.templ;
+		}
+
+		/* Compare to another typeinfo_t object. */
+		constexpr bool operator ==(const typeinfo_t<_T> &rhv) const
+		{
+			return generic.size == rhv.generic.size && generic.templ == rhv.generic.templ;
+		}
+		/* Compare to another typeinfo_t object (inequality). */
+		constexpr bool operator !=(const typeinfo_t<_T> &rhv) const
+		{
+			return generic.size != rhv.generic.size || generic.templ != rhv.generic.templ;
+		}
+		/* Compare to another typeinfo_t object (greater than). */
+		constexpr bool operator >(const typeinfo_t<_T> &rhv) const
+		{
+			return generic.size > rhv.generic.size;
+		}
+		/* Compare to another typeinfo_t object (less than). */
+		constexpr bool operator <(const typeinfo_t<_T> &rhv) const
+		{
+			return generic.size < rhv.generic.size;
+		}
+		/* Compare to another typeinfo_t object (greater than or equal to). */
+		constexpr bool operator >=(const typeinfo_t<_T> &rhv) const
+		{
+			return generic.size >= rhv.generic.size;
+		}
+		/* Compare to another typeinfo_t object (less than or equal to). */
+		constexpr bool operator <=(const typeinfo_t<_T> &rhv) const
+		{
+			return generic.size <= rhv.generic.size;
+		}
+
+		/* Compare to a generic type info object. */
+		constexpr bool operator ==(const _gtypeinfo_t &rhv) const
+		{
+			return generic.size == rhv.size && generic.templ == rhv.templ;
+		}
+		/* Compare to a generic type info object (inequality). */
+		constexpr bool operator !=(const _gtypeinfo_t &rhv) const
+		{
+			return generic.size != rhv.size || generic.templ != rhv.templ;
+		}
+		/* Compare to a generic type info object (greater than). */
+		constexpr bool operator >(const _gtypeinfo_t &rhv) const
+		{
+			return generic.size > rhv.size;
+		}
+		/* Compare to a generic type info object (less than). */
+		constexpr bool operator <(const _gtypeinfo_t &rhv) const
+		{
+			return generic.size < rhv.size;
+		}
+		/* Compare to a generic type info object (greater than or equal to). */
+		constexpr bool operator >=(const _gtypeinfo_t &rhv) const
+		{
+			return generic.size >= rhv.size;
+		}
+		/* Compare to a generic type info object (less than or equal to). */
+		constexpr bool operator <=(const _gtypeinfo_t &rhv) const
+		{
+			return generic.size <= rhv.size;
+		}
+	};
+
+	template <typename _T1, typename _T2>
+	class pair
+	{
+		_T1 m1;
+		_T2 m2;
+
+	public:
+
+		pair(_T1 a1, _T2 a2)
+		{
+			m1 = a1;
+			m2 = a2;
+		}
+		pair(const pair<_T1, _T2> &rhv)
+		{
+			m1 = rhv.m1;
+			m2 = rhv.m2;
+		}
+
+		operator pair<_T2,_T1>() const
+		{
+			return pair<_T1,_T1>(*this);
+		}
+
+		auto operator =(const pair<_T1, _T2> &rhv)
+		{
+			m1 = rhv.m1;
+			m2 = rhv.m2;
+		}
+
+		bool operator ==(const pair<_T1, _T2> &rhv) const
+		{
+			return m1 == rhv.m1 && m2 == rhv.m2;
+		}
+		bool operator ==(const _T1 &rhv) const
+		{
+			return m1 == rhv;
+		}
+
+		_T1& Former() const
+		{
+			return m1;
+		}
+		_T2& Latter() const
+		{
+			return m2;
+		}
+
+		typeinfo_t<_T1> GetFormerTypeInfo() const
+		{
+			return typeinfo_t<_T1>();
+		}
+		typeinfo_t<_T2> GetLatterTypeInfo() const
+		{
+			return typeinfo_t<_T2>();
+		}
+
+		void SetFormer(const _T1 &former)
+		{
+			m1 = former;
+		}
+		void SetLatter(const _T2 &latter)
+		{
+			m2 = latter;
+		}
+		void SetPair(const _T1 &former, const _T2 &latter)
+		{
+			m1 = former;
+			m2 = latter;
+		}
+	};
+}
+
+
+
+#endif // CLDI_C_ONLY == false
+
+#endif // _cldi_head__setup_TYPES_HPP
