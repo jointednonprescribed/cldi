@@ -29,6 +29,7 @@ if(ONEFILE)
 		else()
 			add_library(libcldi SHARED ${SRC})
 		endif()
+		set_target_properties(libcldi PROPERTIES LINKER_LANGUAGE C)
 	else()
 		file (GLOB_RECURSE SRC "stdlib/head-layer/lib/c/*.c" "stdlib/core-layer/lib/c/*.c")
 		if(BUILD_STATIC)
@@ -36,15 +37,21 @@ if(ONEFILE)
 		else()
 			add_library(libcldi SHARED ${SRC})
 		endif()
+		set_target_properties(libcldi PROPERTIES LINKER_LANGUAGE CXX)
+	endif()
+
+	if (UNIX)
+		find_library(UNIXLIB_MATH m PATHS /usr/lib NO_DEFAULT_PATH)
+		target_link_libraries(libcldi ${UNIXLIB_MATH})
 	endif()
 
 	set_target_properties(
 		libcldi
 		VERSION ${PROJECT_VERSION}
-		LIBRARY_OUTPUT_DIRECTORY bin
-		ARCHIVE_OUTPUT_DIRECTORY bin
-		LIBRARY_OUTPUT_NAME      cldi.${LIBSTAMP}
-		ARCHIVE_OUTPUT_NAME      cldi.${LIBSTAMP}
+		LIBRARY_OUTPUT_DIRECTORY "bin"
+		ARCHIVE_OUTPUT_DIRECTORY "bin"
+		LIBRARY_OUTPUT_NAME      "cldi.${LIBSTAMP}"
+		ARCHIVE_OUTPUT_NAME      "cldi.${LIBSTAMP}"
 	)
 else()
 	if(BUILD_CXX)
@@ -57,6 +64,8 @@ else()
 			add_library(cldi_head SHARED ${SRC_HEAD})
 			#add_library(cldi_core SHARED ${SRC_CORE})
 		endif()
+		set_target_properties(cldi_head PROPERTIES LINKER_LANGUAGE CXX)
+		#set_target_properties(cldi_core PROPERTIES LINKER_LANGUAGE CXX)
 	else()
 		file (GLOB_RECURSE SRC_HEAD "stdlib/head-layer/lib/c/*.c")
 		#file (GLOB_RECURSE SRC_CORE "stdlib/core-layer/lib/c/*.c")
@@ -67,11 +76,31 @@ else()
 			add_library(cldi_head SHARED ${SRC_HEAD})
 			#add_library(cldi_core SHARED ${SRC_CORE})
 		endif()
+		set_target_properties(cldi_head PROPERTIES LINKER_LANGUAGE C)
+		#set_target_properties(cldi_core PROPERTIES LINKER_LANGUAGE C)
 	endif()
 
 	#target_link_libraries(cldi_core cldi_head)
 
-	set_target_properties(cldi_head PROPERTIES VERSION ${PROJECT_VERSION} LIBRARY_OUTPUT_DIRECTORY bin ARCHIVE_OUTPUT_DIRECTORY bin LIBRARY_OUTPUT_NAME cldi-head-${LIBSTAMP}  ARCHIVE_OUTPUT_NAME cldi-head-${LIBSTAMP})
+	if (UNIX)
+		find_library(UNIXLIB_MATH m PATHS /usr/lib NO_DEFAULT_PATH)
+		target_link_libraries(cldi_head ${UNIXLIB_MATH})
+		#target_link_libraries(cldi_core ${UNIXLIB_MATH})
+	endif()
 
-	#set_target_properties(cldi_core PROPERTIES VERSION ${PROJECT_VERSION} LIBRARY_OUTPUT_DIRECTORY bin ARCHIVE_OUTPUT_DIRECTORY bin LIBRARY_OUTPUT_NAME "cldi-core.${LIBSTAMP}"  ARCHIVE_OUTPUT_NAME "cldi-core.${LIBSTAMP}")
+	set_target_properties(cldi_head PROPERTIES 
+		VERSION ${PROJECT_VERSION}
+		LIBRARY_OUTPUT_DIRECTORY "bin"
+		ARCHIVE_OUTPUT_DIRECTORY "bin"
+		LIBRARY_OUTPUT_NAME      "cldi-head-${LIBSTAMP}"
+		ARCHIVE_OUTPUT_NAME      "cldi-head-${LIBSTAMP}"
+	)
+
+	#set_target_properties(cldi_core PROPERTIES
+	#VERSION ${PROJECT_VERSION}
+	#LIBRARY_OUTPUT_DIRECTORY "bin"
+	#ARCHIVE_OUTPUT_DIRECTORY "bin"
+	#LIBRARY_OUTPUT_NAME      "cldi-core.${LIBSTAMP}"
+	#ARCHIVE_OUTPUT_NAME      "cldi-core.${LIBSTAMP}"
+	#)
 endif()
