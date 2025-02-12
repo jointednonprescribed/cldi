@@ -9,6 +9,10 @@
 
 
 
+/* Static Settings: C++ Minimum Version */
+#define CLDI_CPP_MINVER 201400L
+
+
 /* Warning Permission Level (0-3) */
 #ifndef CLDI_WPERMIT_LEVEL
 // Default is 1 (Level 2 and 3 warnings will be treated like errors).
@@ -38,7 +42,7 @@
 
 /* C Compatibility Mode (This excludes all C++ features, except for extern "C") */
 #ifdef CLDI_C_ONLY
-#	if !defined(__cplusplus)
+#	if !defined(__cplusplus) || __cplusplus < CLDI_CPP_MINVER
 #		if CLDI_C_ONLY != true
 #           pragma warn("cldi-head: CLDI_C_ONLY must be true on C-only compiler, CLDI_C_ONLY=false is only available on a C++-compliant compiler.")
 #			define CLDI_C_ONLY true
