@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+import os, sys, subprocess, time
+
+
+MAX_SECONDS = 10
+
+def main() -> int: # {
+	basepath = os.path.dirname(sys.argv[0])
+
+	proc = subprocess.Popen(['rm', 'CMakeCache.txt'], cwd=basepath)
+
+	i = 0
+	while True:
+		proc_done = proc.poll() is None
+		if i >= MAX_SECONDS:
+			if not proc_done:
+				proc.terminate()
+			break
+		elif proc_done:
+			break
+		else:
+			i += 1
+			continue
+
+	return 0
+# }
+
+if __name__ == '__main__':
+	sys.exit(main())
