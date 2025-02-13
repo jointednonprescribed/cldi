@@ -50,28 +50,28 @@ typedef enum _CLDITYPETEMPL
 /* Type Info Record type */
 typedef struct _CLDITYPEINFO
 {
-	const size_t          size;
-	const CLDI_TYPE_TEMPL templ;
+	size_t          size;
+	CLDI_TYPE_TEMPL templ;
 
 } clditypeinfo_t;
 
 /* Predefined templates for different types represented as clditypeinfo_t objects. */
-extern const clditypeinfo_t cldiTypeInfoNull;
-extern const clditypeinfo_t cldiTypeInfoChar;
-extern const clditypeinfo_t cldiTypeInfoWChar;
-extern const clditypeinfo_t cldiTypeInfoShort;
-extern const clditypeinfo_t cldiTypeInfoInt;
-extern const clditypeinfo_t cldiTypeInfoLong;
-extern const clditypeinfo_t cldiTypeInfoLLong;
-extern const clditypeinfo_t cldiTypeInfoSize_t;
-extern const clditypeinfo_t cldiTypeInfoFloat;
-extern const clditypeinfo_t cldiTypeInfoDouble;
-extern const clditypeinfo_t cldiTypeInfoFPM;
+extern const clditypeinfo_t cldiNullTypeInfo;
+extern const clditypeinfo_t cldiCharTypeInfo;
+extern const clditypeinfo_t cldiWCharTypeInfo;
+extern const clditypeinfo_t cldiShortTypeInfo;
+extern const clditypeinfo_t cldiIntTypeInfo;
+extern const clditypeinfo_t cldiLongTypeInfo;
+extern const clditypeinfo_t cldiLLongTypeInfo;
+extern const clditypeinfo_t cldiSizeTypeInfo;
+extern const clditypeinfo_t cldiFloatTypeInfo;
+extern const clditypeinfo_t cldiDoubleTypeInfo;
+extern const clditypeinfo_t cldiFPMTypeInfo;
 // Only if long double is enabled, create template for long double.
 #if CLDI_LDBL_ENABLED == true
-	extern const clditypeinfo_t cldiTypeInfoLDouble;
+	extern const clditypeinfo_t cldiLDoubleTypeInfo;
 #endif
-extern const clditypeinfo_t cldiTypeInfoPtr;
+extern const clditypeinfo_t cldiPtrTypeInfo;
 
 // if C++ is loaded, the extern "C" block from before cldipid_t must end now.
 #ifdef __cplusplus

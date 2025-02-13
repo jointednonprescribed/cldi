@@ -18,47 +18,47 @@ cldipid_t cldiGetCurrentPID()
 }
 
 
-const clditypeinfo_t cldiTypeInfoNull = {
+const clditypeinfo_t cldiNullTypeInfo = {
 	.size = 0,
 	.templ = CLDI_NULL_TYPE
 };
-const clditypeinfo_t cldiTypeInfoChar = {
+const clditypeinfo_t cldiCharTypeInfo = {
 	.size = sizeof(char),
 	.templ = CLDI_INT_TYPE
 };
-const clditypeinfo_t cldiTypeInfoWChar = {
+const clditypeinfo_t cldiWCharTypeInfo = {
 	.size = sizeof(wchar_t),
 	.templ = CLDI_INT_TYPE
 };
-const clditypeinfo_t cldiTypeInfoShort = {
+const clditypeinfo_t cldiShortTypeInfo = {
 	.size = sizeof(short),
 	.templ = CLDI_INT_TYPE
 };
-const clditypeinfo_t cldiTypeInfoInt = {
+const clditypeinfo_t cldiIntTypeInfo = {
 	.size = sizeof(int),
 	.templ = CLDI_INT_TYPE
 };
-const clditypeinfo_t cldiTypeInfoLong = {
+const clditypeinfo_t cldiLongTypeInfo = {
 	.size = sizeof(long),
 	.templ = CLDI_INT_TYPE
 };
-const clditypeinfo_t cldiTypeInfoLLong = {
+const clditypeinfo_t cldiLLongTypeInfo = {
 	.size = sizeof(long long),
 	.templ = CLDI_INT_TYPE
 };
-const clditypeinfo_t cldiTypeInfoSize_t = {
+const clditypeinfo_t cldiSizeTypeInfo = {
 	.size = sizeof(size_t),
 	.templ = CLDI_INT_TYPE
 };
-const clditypeinfo_t cldiTypeInfoFloat = {
+const clditypeinfo_t cldiFloatTypeInfo = {
 	.size = sizeof(float),
 	.templ = CLDI_FLOAT_TYPE
 };
-const clditypeinfo_t cldiTypeInfoDouble = {
+const clditypeinfo_t cldiDoubleTypeInfo = {
 	.size = sizeof(double),
 	.templ = CLDI_FLOAT_TYPE
 };
-const clditypeinfo_t cldiTypeInfoFPM = {
+const clditypeinfo_t cldiFPMTypeInfo = {
 	.size = sizeof(cldifpm_t),
 	.templ = CLDI_FLOAT_TYPE
 };
