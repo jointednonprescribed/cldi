@@ -171,6 +171,12 @@ void functypes_test()
 	cout << "\n'functypes' Tests Completed!\n" << endl;
 }
 
+void memory_test()
+{
+
+}
+
+
 int main(void)
 {
 	using namespace std;
@@ -185,6 +191,7 @@ int main(void)
 	cout << "\nCompleted Setup Tests!\n\nRunning Module Tests...\n" << endl;
 
 	functypes_test();
+	memory_test();
 
 	cout << "\nCompleted Module Tests!\n\nTest Routine Completed!\n" << endl;
 
