@@ -20,8 +20,8 @@ namespace cldi
 	constexpr HEAPFLAG HF_DEFAULT_SYSHEAP = CLDI_DEFAULT_SYSHEAP;
 	constexpr HEAPFLAG HF_DEFAULT_VHEAP = CLDI_DEFAULT_VHEAP;
 
-	/* Alias for CLDIMBLKPERM enum type */
-	using MBLKPERM = CLDIMBLKPERM;
+	/* Alias for CLDIMBLKFLAG enum type */
+	using MBLKPERM = CLDIMBLKFLAG;
 	/* Enum values from _CLDIMBLKPERMS: */
 	constexpr MBLKPERM MBLK_OREAD = CLDI_MBLK_OREAD;
 	constexpr MBLKPERM MBLK_OWRTE = CLDI_MBLK_OWRTE;
@@ -319,8 +319,8 @@ namespace cldi
 			constexpr HEAPFLAG HF_DEFAULT_SYSHEAP = CLDI_DEFAULT_SYSHEAP;
 			constexpr HEAPFLAG HF_DEFAULT_VHEAP = CLDI_DEFAULT_VHEAP;
 		
-			/* Alias for CLDIMBLKPERM enum type */
-			using MBLKPERM = CLDIMBLKPERM;
+			/* Alias for CLDIMBLKFLAG enum type */
+			using MBLKPERM = CLDIMBLKFLAG;
 			/* Enum values from _CLDIMBLKPERMS: */
 			constexpr MBLKPERM MBLK_OREAD = CLDI_MBLK_OREAD;
 			constexpr MBLKPERM MBLK_OWRTE = CLDI_MBLK_OWRTE;
