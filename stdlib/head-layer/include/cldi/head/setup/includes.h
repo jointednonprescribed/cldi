@@ -26,18 +26,10 @@
 #	include <cstdlib>
 #	include <cfloat>
 #	include <cstring>
-#	include <string>
-#   include <tuple>
 #   include <typeinfo>
 #   include <type_traits>
-#	if CLDI_INCLUDE_MATH == true
-#		include <cmath>
-#       include <bit>
-#       include <limits>
-#	endif
-#	if CLDI_INCLUDE_TIME == true
-#		include <chrono>
-#	endif
+#	include <bit>
+#   include <limits>
 #endif
 
 /* System-Specific Includes */
