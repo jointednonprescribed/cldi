@@ -144,6 +144,14 @@
 #endif
 
 
+/* Defining a platform-independent macro for __cdecl */
+#if CLDI_PLATFORM == CLDI_WINDOWS
+#	define __cldi_cdecl(type) __cdecl (type)
+#else
+#	define __cldi_cdecl(type) (type)
+#endif
+
+
 /* C++ bindings for this file: */
 #include "icxx/platform.hpp"
 
