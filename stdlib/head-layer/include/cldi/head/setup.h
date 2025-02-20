@@ -18,7 +18,8 @@ namespace cldi
 
 /* Platform-awareness macros and code: */
 #include "setup/platform.h"
-/* All included APIs/external headers are contained here: */
+/* All included C/C++ standard library modules, APIs, and external headers are
+.  contained here: */
 #include "setup/includes.h"
 
 /* Include some setup code. */
