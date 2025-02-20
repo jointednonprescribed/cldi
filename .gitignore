@@ -1,0 +1,24 @@
+
+# Workspace Directories
+.vscode/*
+# Workspace Formats
+*.code-workspace
+
+# Binary Formats
+*.pdb
+*.exe
+*.out
+*.dll
+*.so
+*.obj
+*.o
+
+# Binary Directories
+bin/*
+
+# CMake Files/Directories
+cmake_install.cmake
+CMakeCache.txt
+GITCHANGES.md
+Makefile
+CMakeFiles/*
