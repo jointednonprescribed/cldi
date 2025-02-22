@@ -48,8 +48,41 @@ namespace cldi
 
 	constexpr STAT EINCOMPATIBLE_TYPE = ::CLDI_EINCOMPATIBLE_TYPE;
 
+	using CSTDLIB_ERRCONTEXT = ::CLDI_CSTDLIB_ERRCONTEXT;
+
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_PRINTF = ::CLDI_CSTDEC_PRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_VPRINTF = ::CLDI_CSTDEC_VPRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_FPRINTF = ::CLDI_CSTDEC_FPRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_VFPRINTF = ::CLDI_CSTDEC_VFPRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_SPRINTF = ::CLDI_CSTDEC_SPRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_SNPRINTF = ::CLDI_CSTDEC_SNPRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_VSPRINTF = ::CLDI_CSTDEC_VSPRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_VSNPRINTF = ::CLDI_CSTDEC_VSNPRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_VASPRINTF = ::CLDI_CSTDEC_VASPRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_ASPRINTF = ::CLDI_CSTDEC_ASPRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_VDPRINTF = ::CLDI_CSTDEC_VDPRINTF;
+	constexpr CSTDLIB_ERRCONTEXT CSTDEC_DPRINTF = ::CLDI_CSTDEC_DPRINTF;
+
 	inline STAT &ERRNO = CLDI_ERRNO;
 
+	/* Function for converting C++ standard library errors into CLDISTAT error
+	.  codes. */
+	template <typename _E>
+	CLDISTAT ConvCppStdlibError(CSTDLIB_ERRCONTEXT error_context, _E error)
+	{
+		static_assert(
+			std::is_base_of<std::exception, _E>::value,
+			"cldi-head: cldi::ConvCppStdlibError() can only be used with type argument of std::exception or child classes of such."
+		);
+		switch (error_context)
+		{
+			default:
+				return EUNKNOWN;
+		}
+	}
+
+	inline CLDISTAT    (&ConvCStdlibError)(CSTDLIB_ERRCONTEXT, int) = ::cldiConvCStdlibError;
+	inline CLDISTAT    (&ConvCStdlibErrno)(CSTDLIB_ERRCONTEXT) = ::cldiConvCStdlibErrno;
 	inline const char* (&GetErrorName)(STAT) = ::cldiGetErrorName;
 	inline const char* (&GetErrnoName)() = ::cldiGetErrnoName;
 	inline bool        (&StatWarning)(STAT) = ::cldiStatWarning;
