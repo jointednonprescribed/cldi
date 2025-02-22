@@ -18,8 +18,17 @@ namespace cldi
 
 	using floatmax_t    = ::cldifpm_t;
 	using fpm_t         = ::cldifpm_t;
+	constexpr fpm_t FPM_MANT_DIG = CLDIFPM_MANT_DIG;
+	constexpr fpm_t FPM_DIG = CLDIFPM_DIG;
+	constexpr fpm_t FPM_MIN_EXP = CLDIFPM_MIN_EXP;
+	constexpr fpm_t FPM_MIN_10_EXP = CLDIFPM_MIN_10_EXP;
+	constexpr fpm_t FPM_MAX_EXP = CLDIFPM_MAX_EXP;
+	constexpr fpm_t FPM_MAX_10_EXP = CLDIFPM_MAX_10_EXP;
+	constexpr fpm_t FPM_MAX = CLDIFPM_MAX;
+	constexpr fpm_t FPM_EPSILON = CLDIFPM_EPSILON;
+	constexpr fpm_t FPM_MIN = CLDIFPM_MIN;
 
-	using TYPE_TEMPL    = ::CLDI_TYPE_TEMPL;
+	using TYPE_TEMPL= ::CLDI_TYPE_TEMPL;
 	using TYPE_TEMPLATE = ::CLDI_TYPE_TEMPL;
 	constexpr TYPE_TEMPL TYPE_TEMPL_NULL = ::CLDI_NULL_TYPE;
 	constexpr TYPE_TEMPL TYPE_TEMPL_INTEGER = ::CLDI_INTEGER_TYPE;
