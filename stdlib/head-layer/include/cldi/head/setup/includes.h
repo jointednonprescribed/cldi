@@ -14,6 +14,7 @@
 #	include <stddef.h>
 #	include <stdlib.h>
 #   include <float.h>
+#	include <limits.h>
 #	include <string.h>
 #	if CLDI_INCLUDE_MATH == true
 #		include <math.h>
@@ -25,6 +26,7 @@
 #	include <cstddef>
 #	include <cstdlib>
 #	include <cfloat>
+#   include <climits>
 #	include <cstring>
 #   include <typeinfo>
 #   include <type_traits>

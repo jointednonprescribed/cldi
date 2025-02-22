@@ -46,11 +46,32 @@ typedef enum _CLDISTAT
 
 	CLDI_EINCOMPATIBLE_TYPE,
 } CLDISTAT;
+/* C Standard Library Error contexts */
+typedef enum _CLDICSTDEC
+{
+	CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_VPRINTF   = CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_FPRINTF   = CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_VFPRINTF  = CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_SPRINTF   = CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_SNPRINTF  = CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_VSPRINTF  = CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_VSNPRINTF = CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_VASPRINTF = CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_ASPRINTF  = CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_VDPRINTF  = CLDI_CSTDEC_PRINTF,
+	CLDI_CSTDEC_DPRINTF   = CLDI_CSTDEC_PRINTF,
+} CLDI_CSTDLIB_ERRCONTEXT;
 
 /* This is a global variable for passing errors while keeping return type. */
 extern CLDISTAT CLDI_ERRNO;
 
 /* Methods associated with CLDISTAT values: */
+
+// Convert a C Standard library error into a CLDISTAT error code.
+CLDISTAT cldiConvCStdlibError(CLDI_CSTDLIB_ERRCONTEXT error_context, int error);
+// - Convert from C Standard Library "errno" flag
+CLDISTAT cldiConvCStdlibErrno(CLDI_CSTDLIB_ERRCONTEXT error_context);
 
 /* Get the descriptor string associated with an error code. */
 const char* cldiGetErrorName(CLDISTAT e);
