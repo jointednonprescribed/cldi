@@ -26,10 +26,28 @@ cldipid_t cldiGetCurrentPID();
 #   define CLDI_LDBL_ENABLED true
 typedef long double cldifloatmax_t;
 typedef long double cldifpm_t;
+#	define CLDIFPM_MANT_DIG   LDBL_MANT_DIG
+#	define CLDIFPM_DIG        LDBL_DIG
+#	define CLDIFPM_MIN_EXP    LDBL_MIN_EXP
+#	define CLDIFPM_MIN_10_EXP LDBL_MIN_10_EXP
+#	define CLDIFPM_MAX_EXP    LDBL_MAX_EXP
+#	define CLDIFPM_MAX_10_EXP LDBL_MAX_10_EXP
+#	define CLDIFPM_MAX        LDBL_MAX
+#	define CLDIFPM_EPSILON    LDBL_EPSILON
+#	define CLDIFPM_MIN        LDBL_MIN
 #else
 #	define CLDI_LDBL_ENABLED false
 typedef      double cldifloatmax_t;
 typedef      double cldifpm_t;
+#	define CLDIFPM_MANT_DIG   DBL_MANT_DIG
+#	define CLDIFPM_DIG        DBL_DIG
+#	define CLDIFPM_MIN_EXP    DBL_MIN_EXP
+#	define CLDIFPM_MIN_10_EXP DBL_MIN_10_EXP
+#	define CLDIFPM_MAX_EXP    DBL_MAX_EXP
+#	define CLDIFPM_MAX_10_EXP DBL_MAX_10_EXP
+#	define CLDIFPM_MAX        DBL_MAX
+#	define CLDIFPM_EPSILON    DBL_EPSILON
+#	define CLDIFPM_MIN        DBL_MIN
 #endif
 
 
@@ -52,7 +70,6 @@ typedef struct _CLDITYPEINFO
 {
 	size_t          size;
 	CLDI_TYPE_TEMPL templ;
-
 } clditypeinfo_t;
 
 /* Predefined templates for different types represented as clditypeinfo_t objects. */
