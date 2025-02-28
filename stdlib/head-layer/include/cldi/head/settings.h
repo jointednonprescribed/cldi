@@ -5,7 +5,11 @@
 #ifndef _cldi_head__SETTINGS_H
 #define _cldi_head__SETTINGS_H 1
 
-#include <stdbool.h>
+#ifdef __cplusplus
+#	include <cstdbool>
+#else
+#	include <stdbool.h>
+#endif
 
 
 
@@ -44,7 +48,7 @@
 #ifdef CLDI_C_ONLY
 #	if !defined(__cplusplus) || __cplusplus < CLDI_CPP_MINVER
 #		if CLDI_C_ONLY != true
-#           pragma warn("cldi-head: CLDI_C_ONLY must be true on C-only compiler, CLDI_C_ONLY=false is only available on a C++-compliant compiler.")
+#           pragma warn("cldi-head: CLDI_C_ONLY must be true on C-only compiler, CLDI_C_ONLY=false is only available on a C++-compliant compiler using the C++14 Standard.")
 #			define CLDI_C_ONLY true
 #		endif
 #	else
@@ -52,17 +56,14 @@
 #			define CLDI_C_ONLY true
 #		elif CLDI_C_ONLY < false
 #			define CLDI_C_ONLY false
-#           include <cstdbool>
 #		elif CLDI_C_ONLY != true && CLDI_C_ONLY != false
 #			pragma warn("cldi-head: CLDI_C_ONLY was set to an improper value, defaulting to false.")
 #			define CLDI_C_ONLY false
-#           include <cstdbool>
 #		endif
 #	endif
 #else
 #	ifdef __cplusplus
 #		define CLDI_C_ONLY false
-#       include <cstdbool>
 #	else
 #		define CLDI_C_ONLY true
 #	endif
