@@ -68,7 +68,12 @@ namespace cldi
 	constexpr CSTDLIB_ERRCONTEXT CSTDEC_VDPRINTF = ::CLDI_CSTDEC_VDPRINTF;
 	constexpr CSTDLIB_ERRCONTEXT CSTDEC_DPRINTF = ::CLDI_CSTDEC_DPRINTF;
 
-	inline STAT &ERRNO = CLDI_ERRNO;
+	using exc_t       = cldiexc_t;
+	using exception_t = cldiexc_t;
+	using error_t     = cldiexc_t;
+
+	inline exc_t &ERROR = CLDI_ERROR;
+	inline STAT  &ERRNO = CLDI_ERRNO;
 
 	/* Function for converting C++ standard library errors into CLDISTAT error
 	.  codes. */
