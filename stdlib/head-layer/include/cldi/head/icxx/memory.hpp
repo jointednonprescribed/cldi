@@ -13,52 +13,182 @@
 namespace cldi
 {
 	/* Alias for CLDIHEAPFLAG enum type */
-	using HEAPFLAG = CLDIHEAPFLAG;
+	using HEAPFLAG      = ::CLDIHEAPFLAG;
 	/* Enum values from _CLDIHEAPFLAGS: */
-	constexpr HEAPFLAG HF_SYSHEAP = CLDI_SYSHEAP;
-	constexpr HEAPFLAG HF_FREE_HEAP = CLDI_FREE_HEAP;
-	constexpr HEAPFLAG HF_DEFAULT_SYSHEAP = CLDI_DEFAULT_SYSHEAP;
-	constexpr HEAPFLAG HF_DEFAULT_VHEAP = CLDI_DEFAULT_VHEAP;
+	constexpr HEAPFLAG NULL_HEAPFLAGS = ::CLDI_NULL_HEAPFLAGS;
+	constexpr HEAPFLAG HEAP_ACTIVE = ::CLDI_HEAP_ACTIVE;
+	constexpr HEAPFLAG HEAP_INACTIVE = ::CLDI_HEAP_INACTIVE;
+	constexpr HEAPFLAG ENVHEAP = ::CLDI_ENVHEAP;
+	constexpr HEAPFLAG SYSHEAP = ::CLDI_SYSHEAP;
+	constexpr HEAPFLAG LOWFRAG_HEAP = ::CLDI_LOWFRAG_HEAP;
+	constexpr HEAPFLAG DEFAULT_SYSHEAP = ::CLDI_DEFAULT_SYSHEAP;
+	constexpr HEAPFLAG DEFAULT_ENVHEAP = ::CLDI_DEFAULT_ENVHEAP;
 
 	/* Alias for CLDIMBLKFLAG enum type */
-	using MBLKPERM = CLDIMBLKFLAG;
+	using MBLKPERM      = CLDIMBLKFLAG;
 	/* Enum values from _CLDIMBLKPERMS: */
-	constexpr MBLKPERM MBLK_OREAD = CLDI_MBLK_OREAD;
-	constexpr MBLKPERM MBLK_OWRTE = CLDI_MBLK_OWRTE;
-	constexpr MBLKPERM MBLK_OEXEC = CLDI_MBLK_OEXEC;
-	constexpr MBLKPERM MBLK_GREAD = CLDI_MBLK_GREAD;
-	constexpr MBLKPERM MBLK_GWRTE = CLDI_MBLK_GWRTE;
-	constexpr MBLKPERM MBLK_GEXEC = CLDI_MBLK_GEXEC;
-	constexpr MBLKPERM MBLK_AREAD = CLDI_MBLK_AREAD;
-	constexpr MBLKPERM MBLK_AWRTE = CLDI_MBLK_AWRTE;
-	constexpr MBLKPERM MBLK_AEXEC = CLDI_MBLK_AEXEC;
-	constexpr MBLKPERM MBLK_READ  = CLDI_MBLK_READ;
-	constexpr MBLKPERM MBLK_WRITE = CLDI_MBLK_WRITE;
-	constexpr MBLKPERM MBLK_EXEC  = CLDI_MBLK_EXEC;
+	constexpr MBLKPERM MBLK_OREAD = ::CLDI_MBLK_OREAD;
+	constexpr MBLKPERM MBLK_OWRTE = ::CLDI_MBLK_OWRTE;
+	constexpr MBLKPERM MBLK_OEXEC = ::CLDI_MBLK_OEXEC;
+	constexpr MBLKPERM MBLK_GREAD = ::CLDI_MBLK_GREAD;
+	constexpr MBLKPERM MBLK_GWRTE = ::CLDI_MBLK_GWRTE;
+	constexpr MBLKPERM MBLK_GEXEC = ::CLDI_MBLK_GEXEC;
+	constexpr MBLKPERM MBLK_PREAD = ::CLDI_MBLK_PREAD;
+	constexpr MBLKPERM MBLK_PWRTE = ::CLDI_MBLK_PWRTE;
+	constexpr MBLKPERM MBLK_PEXEC = ::CLDI_MBLK_PEXEC;
+	constexpr MBLKPERM MBLK_READ  = ::CLDI_MBLK_READ;
+	constexpr MBLKPERM MBLK_WRITE = ::CLDI_MBLK_WRITE;
+	constexpr MBLKPERM MBLK_EXEC  = ::CLDI_MBLK_EXEC;
 
 	/* Alias for cldimblkstat_t enum type */
-	using mblkstat_t  = cldimblkstat_t;
+	using mblkstat_t    = ::cldimblkstat_t;
 	/* Enum values for cldimblkstat_t: */
-	constexpr mblkstat_t MBLK_UNAVAILABLE = CLDI_MBLK_UNAVAILABLE;
-	constexpr mblkstat_t MBLK_NONEXISTENT = CLDI_MBLK_NONEXISTENT;
-	constexpr mblkstat_t MBLK_ACTIVE = CLDI_MBLK_ACTIVE;
-	constexpr mblkstat_t MBLK_PENDING = CLDI_MBLK_PENDING;
-	constexpr mblkstat_t MBLK_HOLE = CLDI_MBLK_HOLE;
+	constexpr mblkstat_t MBLK_UNAVAILABLE = ::CLDI_MBLK_UNAVAILABLE;
+	constexpr mblkstat_t MBLK_NONEXISTENT = ::CLDI_MBLK_NONEXISTENT;
+	constexpr mblkstat_t MBLK_ACTIVE      = ::CLDI_MBLK_ACTIVE;
+	constexpr mblkstat_t MBLK_PENDING     = ::CLDI_MBLK_PENDING;
+	constexpr mblkstat_t MBLK_HOLE        = ::CLDI_MBLK_HOLE;
 
+	/* Alias for CLDI_MBLK_HEADER (memory block header) */
+	using mblkheader_t  = ::CLDI_MBLK_HEADER;
+	/* Alias for CLDI_HEAP_HEADER (heap header) */
+	using heapheader_t  = ::CLDI_HEAP_HEADER;
 	/* Alias for cldisysheap_t (system heap reference) */
-	using sysheap_t   = cldisysheap_t;
+	using sysheap_t     = ::cldisysheap_t;
 	/* Alias for cldimblkid_t (memory block ID) */
-	using mblkid_t    = cldimblkid_t;
-	/* Alias for cldimblkdestr_t (memory block destructor) */
-	using mblkdestr_t = cldimblkdestr_t;
-	/* Alias for cldiallocator_t (memory block allocator) */
-	using allocator_t = cldiallocator_t;
+	using mblkid_t      = ::cldimblkid_t;
 
 	/* Alias for cldiheap_t (heap type) */
-	using heap_t = cldiheap_t;
+	using _gheap_t      = ::cldiheap_t;
 
-	/* cldimemref */
-	using _gmemref = cldimemref;
+	/* Alias and type-safe wrapper for cldimemref */
+	using _gmemref      = ::cldimemref;
+	template <typename _T>
+	class memref;
+	/* Type-safe allocator function. */
+	template <typename _T>
+	using mblkallocator = supplier<memref<_T>>;
+	/* Type-safe destructor function. */
+	template <typename _T>
+	using mblkdestructor = consumer<memref<_T>*>;
+
+	/* Type-safe wrapper type for cldiheap_t: */
+	class heap_t: private _gheap_t
+	{
+	public:
+
+		static constexpr size_t DEFAULT_MBLK_BUFSIZE = CLDI_DEFAULT_MBLK_BUFSIZE;
+
+		heap_t();
+		heap_t(size_t heapsize, int flags);
+		heap_t(size_t bufsize, size_t heapsize, int flags);
+		heap_t(sysheap_t sysheap);
+		heap_t(const _gheap_t &conv);
+		heap_t(const heap_t &rhv);
+		~heap_t();
+
+		STAT Drop();
+
+		static heap_t MakeHeapFromCurrent();
+		STAT MakeCurrentHeap();
+		STAT SetToCurrentHeap();
+
+		size_t GetTotalHeapSize() const;
+		size_t GetHeapSize() const;
+		size_t MemoryUsage() const;
+		double MemoryUsagePercent() const;
+		size_t MemoryRemaining() const;
+
+		template <typename _T>
+		mblkid_t   NewBlock(int flags)
+		{
+			return cldiHeapNewBlock(this, typeinfo_t<_T>(), flags);
+		}
+		template <typename _T>
+		mblkid_t   NewArray(size_t array_size, int flags)
+		{
+			return cldiHeapNewArray(this, typeinfo_t<_T>(), array_size, flags);
+		}
+		template <typename _T>
+		mblkid_t   NewPendingBlock(int flags)
+		{
+			return cldiHeapNewPendingBlock(this, typeinfo_t<_T>(), flags);
+		}
+		template <typename _T>
+		mblkid_t   NewPendingArray(size_t array_size, int flags)
+		{
+			return cldiHeapNewPendingArray(this, typeinfo_t<_T>(), array_size, flags);
+		}
+		template <typename _T>
+		memref<_T> NewBlockRef(int flags, mblkdestructor<_T> destr = NULL)
+		{
+			return memref<_T>(this, cldiHeapNewPendingBlock(this, typeinfo_t<_T>(), flags), destr);
+		}
+		template <typename _T>
+		memref<_T> NewArrayRef(size_t array_size, int flags, mblkdestructor<_T> destr = NULL)
+		{
+			return memref<_T>(this, cldiHeapNewPendingArray(this, typeinfo_t<_T>(), array_size, flags), destr);
+		}
+		STAT BorrowBlock(mblkid_t blkid) const;
+		STAT ClaimBlock(mblkid_t blkid) const;
+		STAT DropBlock(mblkid_t blkid);
+
+		void *const       GetBlockAddr(mblkid_t blkid);
+		const void *const GetBlockConstAddr(mblkid_t blkid)        const;
+		STAT              GetBlockStatus(mblkid_t blkid)           const;
+		int               GetBlockPerms(mblkid_t blkid)            const;
+		cldipid_t         GetBlockOwner(mblkid_t blkid)            const;
+		int               GetBlockRefCount(mblkid_t blkid)         const;
+		size_t            GetBlockSize(mblkid_t blkid)             const;
+		size_t            GetBlockCapacity(mblkid_t blkid)         const;
+
+		int      GetBlockPerms(const cldiheap_t *self, cldimblkid_t blk);
+		CLDISTAT SetBlockPerms(const cldiheap_t *self, cldimblkid_t blk, int perms);
+		CLDISTAT AddBlockPerms(const cldiheap_t *self, cldimblkid_t blk, int perms);
+		CLDISTAT RemoveBlockPerms(const cldiheap_t *self, cldimblkid_t blk, int perms);
+		CLDISTAT ClearBlockPerms(const cldiheap_t *self, cldimblkid_t blk);
+		
+		bool BlockStatusEq(cldimblkid_t blk, cldimblkstat_t check_stat);
+		bool IsBlockActive(const cldiheap_t *self, cldimblkid_t blk);
+		bool IsBlockPending(const cldiheap_t *self, cldimblkid_t blk);
+		bool IsBlockHole(const cldiheap_t *self, cldimblkid_t blk);
+		bool IsBlockWritable(const cldiheap_t *self, cldimblkid_t blk);
+		bool IsBlockReadable(const cldiheap_t *self, cldimblkid_t blk);
+		bool IsBlockExecutable(const cldiheap_t *self, cldimblkid_t blk);
+		bool IsBlockWritableOnThread(const cldiheap_t *self, cldimblkid_t blk, cldipid_t thr);
+		bool IsBlockReadableOnThread(const cldiheap_t *self, cldimblkid_t blk, cldipid_t thr);
+		bool IsBlockExecutableOnThread(const cldiheap_t *self, cldimblkid_t blk, cldipid_t thr);
+		
+		bool IsNull() const;
+		bool IsActive() const;
+		bool IsSysheap() const;
+		bool IsEnvHeap() const;
+		bool IsLowFrag() const;
+
+		const char*     GetName() const;
+		memref<wchar_t> GetNameW();
+		STAT            SetName(const char *name);
+		STAT            SetName(const wchar_t *name);
+
+		template <typename _T>
+		memref<_T> CallAllocator(mblkallocator<_T> allocator)
+		{
+			_gheap_t *const true_heap = ::CLDI_CURRENT_HEAP;
+
+			::CLDI_CURRENT_HEAP = this;
+
+			memref<_T> ref = allocator();
+
+			::CLDI_CURRENT_HEAP = true_heap;
+
+			return ref;
+		}
+	};
+	/* Current Heap reference. */
+	inline _gheap_t* (&__CURRENT_HEAP) = ::CLDI_CURRENT_HEAP;
+	/* Get current heap. */
+	heap_t&            GetCurrentHeap();
+	inline sysheap_t (&GetCurrentSysheap)() = ::cldiGetCurrentSysheap;
 
 	/* Type-safe wrapper type for cldimemref: */
 	template <typename _T>
@@ -67,160 +197,178 @@ namespace cldi
 	private:
 
 		memref(_T *ref, size_t item_count=1, mblkdestr_t destr=NULL):
-			destructor(destr), ptr(ref), heap(GetCurrentHeap()), id(0),
-			objcount(item_count). objtype(TYPE_INFO), owner(GetCurrentPID()),
+			objtype(TYPE_INFO), destructor(destr), ptr(ref),
+			heap(GetCurrentHeap()), id(0),  owner(GetCurrentPID()),
 			active(ref != NULL), activeid(false), shared(true)
 		{}
 
 	public:
 
-		bool MatchTypeInfo(_gtypeinfo_t info)
+		bool MatchTypeInfo(const _gtypeinfo_t &info)
 		{
 			return info.size == sizeof(_T) && info.templ == typeinfo_t<_T>::TEMPLATE;
 		}
-		bool MatchBlockType(memblkid_t blkid, const heap_t &heap)
+		bool MatchBlockType(const heap_t &heap, memblkid_t blkid)
 		{
-			_gtypeinfo_t info = heap->GetBlockTypeInfo(blkid);
+			_gtypeinfo_t info = heap->GetBlockType(blkid);
 			return info.size == sizeof(_T) && info.templ == typeinfo_t<_T>::TEMPLATE;
 		}
-		bool MatchBlockType(memblkid_t blkid)
+		bool MatchBlockType(mblkid_t blkid)
 		{
-			return MatchBlockType(blkid, *(this->heap))
+			return MatchBlockType(*(this->heap), blkid);
 		}
 		bool MatchBlockType(const memref<_T> &ref)
 		{
 			return MatchBlockType(ref.id, ref.heap);
 		}
 
-		auto operator =(const memref<_T> &rhv)
+		STAT Borrow(const memref<_T> &rhv)
 		{
 			errno = SUCCESS;
-			if (rhv.activeid || rhv.active) {
-				memref<_T> sref = rhv.Share();
-				if (!cldiIsPermissible()) {
-					return;
-				} else {
-					ptr        = sref.ptr;
-					destructor = sref.destructor;
-					heap       = sref.heap;
-					id         = sref.id;
-					objcount   = sref.objcount;
-					objtype    = sref.objtype;
-					active     = sref.active;
-					activeid   = sref.activeid;
-					shared     = true;
+
+			if (rhv.active) {
+				if (active)
+					Drop();
+
+				if (rhv.activeid) {
+					::cldiHeapBorrowBlock(rhv.heap, rhv.id);
+					if (!cldiIsPermissible()) {
+						return errno;
+					}
 				}
-			} else {
-				ptr        = rhv.ptr;
+				objtype    = rhv.objtype;
 				destructor = rhv.destructor;
+				ptr        = rhv.ptr;
 				heap       = rhv.heap;
 				id         = rhv.id;
-				objcount   = rhv.objcount;
-				objtype    = rhv.objtype;
 				active     = rhv.active;
 				activeid   = rhv.activeid;
-				shared     = rhv.shared;
+				shared     = true;
 			}
+
+			return errno;
 		}
-		auto operator =(const _gmemref &rhv)
+		STAT Borrow(const _gmemref &rhv)
 		{
 			errno = SUCCESS;
+
 			if (!MatchTypeInfo(rhv.objtype)) {
+				errno = EINCOMPATIBLE_TYPE;
+				return EINCOMPATIBLE_TYPE;
+			}
+
+			if (rhv.active) {
+				if (active)
+					Drop();
+
+				::cldiMemrefBorrow(this, &rhv);
+				if (!IsPermissible()) {
+					return errno;
+				}
+			}
+
+			return errno;
+		}
+		STAT Borrow(heap_t &heap, mblkid_t blkid, mblkdestr_t destr = NULL)
+		{
+			errno = SUCCESS;
+			if (!MatchTypeInfo(heap, blkid)) {
 				errno = EINCOMPATIBLE_TYPE;
 				return;
 			}
-			_gmemref sref;
-			if (rhv.activeid || rhv.active) {
-				cldiMemrefShare(&rhv, &sref);
-				if (!cldiIsPermissible()) {
-					return;
+
+			if (heap.IsBlockActive(blkid)) {
+				if (active)
+					Drop();
+
+				heap.BorrowBlock(blkid);
+				if (!IsPermissible()) {
+					return errno;
 				} else {
-					ptr        = sref.ptr;
-					destructor = sref.destructor;
-					heap       = sref.heap;
-					id         = sref.id;
-					objcount   = sref.objcount;
-					objtype    = sref.objtype;
-					active     = sref.active;
-					activeid   = sref.activeid;
+					destructor = destr;
+					objtype    = heap.GetBlockType();
+					ptr        = NULL;
+					heap       = heap;
+					id         = blkid;
+					active     = true;
+					activeid   = true;
 					shared     = true;
 				}
-			} else {
-				ptr        = rhv.ptr;
-				destructor = rhv.destructor;
-				heap       = rhv.heap;
-				id         = rhv.id;
-				objcount   = rhv.objcount;
-				objtype    = rhv.objtype;
-				active     = rhv.active;
-				activeid   = rhv.activeid;
-				shared     = rhv.shared;
 			}
+
+			return errno;
+		}
+		STAT Borrow(mblkid_t blkid)
+		{
+			return Borrow(GetCurrentHeap(), blkid);
 		}
 
 		memref():
-			destructor(NULL), ptr(NULL), heap(NULL), id(0), objcount(0),
-			objtype(TYPE_INFO), owner(GetCurrentPID()), active(false),
-			activeid(false), shared(false)
+			objtype(typeinfo_t<_T>()), destructor(NULL), ptr(NULL),
+			heap(NULL), id(0), owner(GetCurrentPID()),
+			active(false), activeid(false), shared(false)
 		{}
-		memref(const memref<_T> &ref):
+		memref(const memref<_T> &borrow):
 			owner(GetCurrentPID())
 		{
-			*this = ref;
+			active   = false;
+			activeid = false;
+			Borrow(borrow);
 		}
-		memref(_gmemref &gref):
+		memref(_gmemref &gborrow):
+			owner(GetCurrentPID())
 		{
-			*this = gref;
+			active   = false;
+			activeid = false;
+			Borrow(gborrow);
 		}
-		memref(heap_t &blkheap, mblkid_t blkid, mblkdestr_t destr=NULL):
+		memref(heap_t &blkheap, mblkid_t blkid, mblkdestuctor<_T> destr=NULL):
 			owner(GetCurrentPID())
 		{
 			errno = SUCCESS;
+
+			const mblkheader_t *blkh = cldiHeapGetBlockHeader(&blkheap, blkid);
+
 			// if the block does not exist, construct null and return
-			if (!blkheap.BlockExists(blkid)) {
-				errno = ENONEXISTENT;
-				goto construct_null;
+			if (!cldiIsPermissible()) {
+			construct_null: // construct null and return
+				objtype    = CLDITYPEINFO_NULL;
+				destructor = NULL;
+				ptr        = NULL;
+				heap       = NULL;
+				id         = 0;
+				active     = false;
+				activeid   = false;
+				shared     = false;
+				return;
 			} else {
-				_gtypeinfo_t tinfo = blkheap.GetBlockTypeInfo(blkid);
 				// else, check type information of memory block
-				if (!MatchTypeInfo(tinfo)) {
+				if (!MatchTypeInfo(blkh->block_type)) {
 					// if incompatible, construct null and return will error.
 					errno = EINCOMPATIBLE_TYPE;
 					goto construct_null;
 				// else if the block is pending,
-				} else if (blkheap.IsPendingBlock(blkid)) {
+				} else if (blkh->status == MBLK_PENDING) {
 					// claim block ownership
-					blkheap.ClaimBlock(blkid);
+					cldiHeapClaimBlock(&blkheap, blkid);
 					// if some error is returned,
-					if (!IsPermissible()) {
-					construct_null: // construct null and return
-						ptr        = NULL;
-						destructor = NULL;
-						heap       = NULL;
-						id         = 0;
-						objcount   = 0;
-						objtype    = CLDITYPEINFO_NULL;
-						active     = false;
-						activeid   = false;
-						shared     = false;
-						return;
-					}
+					if (!IsPermissible())
+						goto construct_null;
 					// else, claiming the block was successful, so construct with \
 					block and heap information and shared=false flag
-					ptr        = NULL;
+					objtype    = blkh->block_type;
 					destructor = destr;
+					ptr        = NULL;
 					heap       = &blkheap;
 					id         = blkid;
-					objcount   = blkheap.GetBlockObjectCount(blkid);
-					objtype    = tinfo;
 					active     = true;
 					activeid   = true;
 					shared     = false;
 					return;
-				// else, the block is active 
-				} else {
+				// else, if the block is active 
+				} else if (blkh->status == MBLK_ACTIVE) {
 					// attempt to share the block instead
-					blkheap.ShareBlock(blkid);
+					cldiHeapBorrowBlock(&blkheap, blkid);
 					// if not successful, construct null and return with current \
 					error.
 					if (!IsPermissible()) {
@@ -228,18 +376,26 @@ namespace cldi
 					}
 					// if sharing was successful, construct with block and \
 					heap information and shared=true flag.
-					ptr        = NULL;
+					objtype    = blkh->block_type;
 					destructor = destr;
+					ptr        = NULL;
 					heap       = &blkheap;
 					id         = blkid;
-					objcount   = blkheap.GetBlockObjectCount(blkid);
-					objtype    = tinfo;
 					active     = true;
 					activeid   = true;
 					shared     = true;
 					return;
-				}
+				}cout << setw(22) << records[i].name << setw(5) << records[i].avg << endl
 			}
+		}
+
+		auto operator =(const memref<_T> &rhv)
+		{
+			Borrow(rhv);
+		}
+		auto operator =(const _gmemref &rhv)
+		{
+			Borrow(rhv);
 		}
 
 		/* Must be called by the destructor. */
@@ -309,327 +465,7 @@ namespace cldi
 			return heap.BorrowBlockAddr(id);
 		}
 
-		bool IsNull() constnamespace cldi
-		{
-			/* Alias for CLDIHEAPFLAG enum type */
-			using HEAPFLAG = CLDIHEAPFLAG;
-			/* Enum values from _CLDIHEAPFLAGS: */
-			constexpr HEAPFLAG HF_SYSHEAP = CLDI_SYSHEAP;
-			constexpr HEAPFLAG HF_FREE_HEAP = CLDI_FREE_HEAP;
-			constexpr HEAPFLAG HF_DEFAULT_SYSHEAP = CLDI_DEFAULT_SYSHEAP;
-			constexpr HEAPFLAG HF_DEFAULT_VHEAP = CLDI_DEFAULT_VHEAP;
-		
-			/* Alias for CLDIMBLKFLAG enum type */
-			using MBLKPERM = CLDIMBLKFLAG;
-			/* Enum values from _CLDIMBLKPERMS: */
-			constexpr MBLKPERM MBLK_OREAD = CLDI_MBLK_OREAD;
-			constexpr MBLKPERM MBLK_OWRTE = CLDI_MBLK_OWRTE;
-			constexpr MBLKPERM MBLK_OEXEC = CLDI_MBLK_OEXEC;
-			constexpr MBLKPERM MBLK_GREAD = CLDI_MBLK_GREAD;
-			constexpr MBLKPERM MBLK_GWRTE = CLDI_MBLK_GWRTE;
-			constexpr MBLKPERM MBLK_GEXEC = CLDI_MBLK_GEXEC;
-			constexpr MBLKPERM MBLK_AREAD = CLDI_MBLK_AREAD;
-			constexpr MBLKPERM MBLK_AWRTE = CLDI_MBLK_AWRTE;
-			constexpr MBLKPERM MBLK_AEXEC = CLDI_MBLK_AEXEC;
-			constexpr MBLKPERM MBLK_READ  = CLDI_MBLK_READ;
-			constexpr MBLKPERM MBLK_WRITE = CLDI_MBLK_WRITE;
-			constexpr MBLKPERM MBLK_EXEC  = CLDI_MBLK_EXEC;
-		
-			/* Alias for cldimblkstat_t enum type */
-			using mblkstat_t  = cldimblkstat_t;
-			/* Enum values for cldimblkstat_t: */
-			constexpr mblkstat_t MBLK_UNAVAILABLE = CLDI_MBLK_UNAVAILABLE;
-			constexpr mblkstat_t MBLK_NONEXISTENT = CLDI_MBLK_NONEXISTENT;
-			constexpr mblkstat_t MBLK_ACTIVE = CLDI_MBLK_ACTIVE;
-			constexpr mblkstat_t MBLK_PENDING = CLDI_MBLK_PENDING;
-			constexpr mblkstat_t MBLK_HOLE = CLDI_MBLK_HOLE;
-		
-			/* Alias for cldisysheap_t (system heap reference) */
-			using sysheap_t   = cldisysheap_t;
-			/* Alias for cldimblkid_t (memory block ID) */
-			using mblkid_t    = cldimblkid_t;
-			/* Alias for cldimblkdestr_t (memory block destructor) */
-			using mblkdestr_t = cldimblkdestr_t;
-			/* Alias for cldiallocator_t (memory block allocator) */
-			using allocator_t = cldiallocator_t;
-		
-			/* Alias for cldiheap_t (heap type) */
-			using heap_t = cldiheap_t;
-		
-			/* cldimemref */
-			using _gmemref = cldimemref;
-		
-			/* Type-safe wrapper type for cldimemref: */
-			template <typename _T>
-			class memref: private _gmemref
-			{
-			private:
-		
-				memref(_T *ref, size_t item_count=1, mblkdestr_t destr=NULL):
-					destructor(destr), ptr(ref), heap(GetCurrentHeap()), id(0),
-					objcount(item_count). objtype(TYPE_INFO), owner(GetCurrentPID()),
-					active(ref != NULL), activeid(false), shared(true)
-				{}
-		
-			public:
-		
-				bool MatchTypeInfo(_gtypeinfo_t info)
-				{
-					return info.size == sizeof(_T) && info.templ == typeinfo_t<_T>::TEMPLATE;
-				}
-				bool MatchBlockType(memblkid_t blkid, const heap_t &heap)
-				{
-					_gtypeinfo_t info = heap->GetBlockTypeInfo(blkid);
-					return info.size == sizeof(_T) && info.templ == typeinfo_t<_T>::TEMPLATE;
-				}
-				bool MatchBlockType(memblkid_t blkid)
-				{
-					return MatchBlockType(blkid, *(this->heap))
-				}
-				bool MatchBlockType(const memref<_T> &ref)
-				{
-					return MatchBlockType(ref.id, ref.heap);
-				}
-		
-				auto operator =(const memref<_T> &rhv)
-				{
-					errno = SUCCESS;
-					if (rhv.activeid || rhv.active) {
-						memref<_T> sref = rhv.Share();
-						if (!cldiIsPermissible()) {
-							return;
-						} else {
-							ptr        = sref.ptr;
-							destructor = sref.destructor;
-							heap       = sref.heap;
-							id         = sref.id;
-							objcount   = sref.objcount;
-							objtype    = sref.objtype;
-							active     = sref.active;
-							activeid   = sref.activeid;
-							shared     = true;
-						}
-					} else {
-						ptr        = rhv.ptr;
-						destructor = rhv.destructor;
-						heap       = rhv.heap;
-						id         = rhv.id;
-						objcount   = rhv.objcount;
-						objtype    = rhv.objtype;
-						active     = rhv.active;
-						activeid   = rhv.activeid;
-						shared     = rhv.shared;
-					}
-				}
-				auto operator =(const _gmemref &rhv)
-				{
-					errno = SUCCESS;
-					if (!MatchTypeInfo(rhv.objtype)) {
-						errno = EINCOMPATIBLE_TYPE;
-						return;
-					}
-					_gmemref sref;
-					if (rhv.activeid || rhv.active) {
-						cldiMemrefShare(&rhv, &sref);
-						if (!cldiIsPermissible()) {
-							return;
-						} else {
-							ptr        = sref.ptr;
-							destructor = sref.destructor;
-							heap       = sref.heap;
-							id         = sref.id;
-							objcount   = sref.objcount;
-							objtype    = sref.objtype;
-							active     = sref.active;
-							activeid   = sref.activeid;
-							shared     = true;
-						}
-					} else {
-						ptr        = rhv.ptr;
-						destructor = rhv.destructor;
-						heap       = rhv.heap;
-						id         = rhv.id;
-						objcount   = rhv.objcount;
-						objtype    = rhv.objtype;
-						active     = rhv.active;
-						activeid   = rhv.activeid;
-						shared     = rhv.shared;
-					}
-				}
-		
-				memref():
-					destructor(NULL), ptr(NULL), heap(NULL), id(0), objcount(0),
-					objtype(TYPE_INFO), owner(GetCurrentPID()), active(false),
-					activeid(false), shared(false)
-				{}
-				memref(const memref<_T> &ref):
-					owner(GetCurrentPID())
-				{
-					*this = ref;
-				}
-				memref(_gmemref &gref):
-				{
-					*this = gref;
-				}
-				memref(heap_t &blkheap, mblkid_t blkid, mblkdestr_t destr=NULL):
-					owner(GetCurrentPID())
-				{
-					errno = SUCCESS;
-					// if the block does not exist, construct null and return
-					if (!blkheap.BlockExists(blkid)) {
-						errno = ENONEXISTENT;
-						goto construct_null;
-					} else {
-						_gtypeinfo_t tinfo = blkheap.GetBlockTypeInfo(blkid);
-						// else, check type information of memory block
-						if (!MatchTypeInfo(tinfo)) {
-							// if incompatible, construct null and return will error.
-							errno = EINCOMPATIBLE_TYPE;
-							goto construct_null;
-						// else if the block is pending,
-						} else if (blkheap.IsPendingBlock(blkid)) {
-							// claim block ownership
-							blkheap.ClaimBlock(blkid);
-							// if some error is returned,
-							if (!IsPermissible()) {
-							construct_null: // construct null and return
-								ptr        = NULL;
-								destructor = NULL;
-								heap       = NULL;
-								id         = 0;
-								objcount   = 0;
-								objtype    = CLDITYPEINFO_NULL;
-								active     = false;
-								activeid   = false;
-								shared     = false;
-								return;
-							}
-							// else, claiming the block was successful, so construct with \
-							block and heap information and shared=false flag
-							ptr        = NULL;
-							destructor = destr;
-							heap       = &blkheap;
-							id         = blkid;
-							objcount   = blkheap.GetBlockObjectCount(blkid);
-							objtype    = tinfo;
-							active     = true;
-							activeid   = true;
-							shared     = false;
-							return;
-						// else, the block is active 
-						} else {
-							// attempt to share the block instead
-							blkheap.ShareBlock(blkid);
-							// if not successful, construct null and return with current \
-							error.
-							if (!IsPermissible()) {
-								goto construct_null;
-							}
-							// if sharing was successful, construct with block and \
-							heap information and shared=true flag.
-							ptr        = NULL;
-							destructor = destr;
-							heap       = &blkheap;
-							id         = blkid;
-							objcount   = blkheap.GetBlockObjectCount(blkid);
-							objtype    = tinfo;
-							active     = true;
-							activeid   = true;
-							shared     = true;
-							return;
-						}
-					}
-				}
-		
-				/* Must be called by the destructor. */
-				CLDISTAT Drop()
-				{
-					if (active) {
-						destructor(this);
-						if (activeid) {
-							heap.DropBlock(id);
-						} else if (ptr != NULL) {
-							DropAddress(ptr);
-						}
-						ptr        = NULL;
-						destructor = NULL;
-						heap       = NULL;
-						id         = 0;
-						objcount   = 0;
-						active     = false;
-						activeid   = false;
-						shared     = false;
-					}
-				}
-				~memref()
-				{
-					this->Drop();
-				}
-		
-				mblkdestr_t GetDestructor() const
-				{
-					return destructor;
-				}
-				heap_t& GetHeap() const
-				{
-					return *heap;
-				}
-				mblkid_t GetID() const
-				{
-					return id;
-				}
-				size_t GetObjectCount() const
-				{
-					return objcount;
-				}
-				_gtypeinfo_t GetBlockTypeInfo() const
-				{
-					return heap.GetBlockTypeInfo(id);
-				} 
-				_gtypeinfo_t GetGenericTypeInfo() const
-				{
-					return objtype;
-				}
-				typeinfo_t<_T> GetTypeInfo() const
-				{
-					return typeinfo_t<_T>();
-				}
-				pid_t GetOwner() const
-				{
-					return owner;
-				}
-		
-				_T* GetAddr() const
-				{
-					return heap.GetBlockAddr(id);
-				}
-				const _T* BorrowAddr() const
-				{
-					return heap.BorrowBlockAddr(id);
-				}
-		
-				bool IsNull() const
-				{
-					return ptr == NULL && id == 0 && heap == NULL && objcount == 0 && !active;
-				}
-				bool IsActive() const
-				{
-					return active;
-				}
-				bool IsActiveByID() const
-				{
-					return active && activeid;
-				}
-				bool IsShared() const
-				{
-					return shared;
-				}
-				bool OwnsBlock() const
-				{
-					return !shared;
-				}
-			};
-		}
+		bool IsNull() const
 		{
 			return ptr == NULL && id == 0 && heap == NULL && objcount == 0 && !active;
 		}
