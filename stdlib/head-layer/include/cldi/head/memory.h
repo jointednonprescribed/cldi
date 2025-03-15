@@ -38,9 +38,9 @@ int cldiConvToSysHeapFlags(int flags);
 // w: write permissions
 // x: execute permissions
 // A: author status; which threads can change permissions
-// O: owner participation; whether the owner is still
-// using the block                        0000 0000 0000 0000
-typedef enum _CLDIMBLKFLAGS //                 ownr: grp: all:
+// O: owner participation; whether the owner is still using the block.
+//                                        0000 0000 0000 0000
+typedef enum _CLDIMBLKFLAGS //                  ownr: grp: all:
 { //                                         O A-- rwx rwx rwx
 	CLDI_MBLK_OREAD         = 0x100,  // 000 0 000 100 000 000
 	CLDI_MBLK_OWRTE         = 0x80,   // 000 0 000 010 000 000
@@ -48,29 +48,35 @@ typedef enum _CLDIMBLKFLAGS //                 ownr: grp: all:
 	CLDI_MBLK_GREAD         = 0x20,   // 000 0 000 000 100 000
 	CLDI_MBLK_GWRTE         = 0x10,   // 000 0 000 000 010 000
 	CLDI_MBLK_GEXEC         = 0x8,    // 000 0 000 000 001 000
-	CLDI_MBLK_AREAD         = 0x4,    // 000 0 000 000 000 100
-	CLDI_MBLK_AWRTE         = 0x2,    // 000 0 000 000 000 010
-	CLDI_MBLK_AEXEC         = 0x1,    // 000 0 000 000 000 001
+	CLDI_MBLK_PREAD         = 0x4,    // 000 0 000 000 000 100
+	CLDI_MBLK_PWRTE         = 0x2,    // 000 0 000 000 000 010
+	CLDI_MBLK_PEXEC         = 0x1,    // 000 0 000 000 000 001
 	// No threads can change permissions (author priviledges) (0x000)
 	CLDI_MBLK_NO_AUTH       = 0x000,  // 000 0 000 000 000 000
 	// No threads can change permissions (author priviledges) (0x000)
-	CLDI_MBLK_AAUTH         = 0x200,  // 000 0 001 000 000 000
+	CLDI_MBLK_PAUTH         = 0x200,  // 000 0 001 000 000 000
 	// Thread in the same group as owner can change permissions (author priviledges) (0x010)
 	CLDI_MBLK_GAUTH         = 0x400,  // 000 0 010 000 000 000
 	// Owner thread can change permissions (author priviledges, this by itself is default) (0x100)
 	CLDI_MBLK_OAUTH         = 0x800,  // 000 0 100 000 000 000
-
-	// Owner is still using the block (this bit is usually added when the block is claimed).
+	// Owner is still using the block (this bit is usually added when the block
+	// is claimed).
 	CLDI_MBLK_ACTIVEOWNER   = 0x1000, // 000 1 000 000 000 000
 
+	/* Defaults */
 	CLDI_DEFAULT_MBLK_AUTH  = CLDI_MBLK_OAUTH,
 
-	CLDI_DEFAULT_MBLK_PERMS = CLDI_DEFAULT_MBLK_AUTH | CLDI_MBLK_OREAD | CLDI_MBLK_OWRTE | CLDI_MBLK_GREAD | CLDI_MBLK_AREAD,
+	CLDI_DEFAULT_MBLK_PERMS = CLDI_DEFAULT_MBLK_AUTH | CLDI_MBLK_OREAD | CLDI_MBLK_OWRTE | CLDI_MBLK_GREAD | CLDI_MBLK_PREAD,
 	CLDI_PRIVATE_MBLK_PERMS = CLDI_MBLK_OAUTH | CLDI_MBLK_OREAD | CLDI_MBLK_OWRTE,
 
+	/* Aliases */
 	CLDI_MBLK_READ          = CLDI_MBLK_OREAD,
 	CLDI_MBLK_WRITE         = CLDI_MBLK_OWRTE,
 	CLDI_MBLK_EXEC          = CLDI_MBLK_OEXEC,
+
+	CLDI_MBLK_OWNER_PERMS   = CLDI_MBLK_OREAD | CLDI_MBLK_OWRTE | CLDI_MBLK_OEXEC,
+	CLDI_MBLK_GROUP_PERMS   = CLDI_MBLK_GREAD | CLDI_MBLK_GWRTE | CLDI_MBLK_GEXEC,
+	CLDI_MBLK_PUBLIC_PERMS  = CLDI_MBLK_PREAD | CLDI_MBLK_PWRTE | CLDI_MBLK_PEXEC,
 } CLDIMBLKFLAG;
 // Convert CLDI memory block permissions flags to system-specific ones (only include
 // permissions-related flags).
@@ -158,6 +164,18 @@ typedef struct _CLDIHEAPH
 	cldipid_t          owner;
 } CLDI_HEAP_HEADER;
 
+/* Memory Reference type */
+struct _CLDIMEMREF
+{
+	clditypeinfo_t  objtype;
+	cldimblkdestr_t destructor;
+	void           *ptr;
+	cldiheap_t     *heap;
+	cldimblkid_t    id;
+	cldipid_t       owner;
+	bool active, activeid, shared;
+};
+
 /* Heap type */
 typedef struct _CLDIHEAP
 {
@@ -165,22 +183,123 @@ typedef struct _CLDIHEAP
 	cldisysheap_t      sysheap;
 	/* The managed-environment heap that the object refers to (if any). */
 	CLDI_HEAP_HEADER  *envheap;
-	/* An array of known active blocks. */
+	/* An array of known active blocks (if not stored in heap header). */
 	CLDI_MBLK_HEADER **blocks;
 	/* The amount of known active blocks. */
 	cldimblkid_t       blockcount;
 } cldiheap_t;
 
+
+/* Methods associated with cldimemref objects: */
+
+/* Construct a cldimemref as blank (null). */
+CLDISTAT cldiInitMemref(cldimemref *self);
+/* Construct a cldimemref from an existing block using its ID. */
+CLDISTAT cldiInitMemrefExistingID(cldimemref *self, cldimblkid_t blkid);
+/* Construct a cldimemref with a copy of an existing block using its ID. */
+CLDISTAT cldiInitMemrefCopyID(cldimemref *self, cldimblkid_t blkid);
+/* Construct a cldimemref from an existing block on a particular heap, using its ID. */
+CLDISTAT cldiInitMemrefOnHeap(cldimemref *self, cldiheap_t *heap, cldimblkid_t blkid);
+/* Construct a cldimemref with a copy of an existing block on a particular heap, using its ID. */
+CLDISTAT cldiInitMemrefCopyOnHeap(cldimemref *self, cldiheap_t *heap, cldimblkid_t blkid);
+/* Construct a cldimemref from an already existing block (share block). */
+CLDISTAT cldiInitMemrefBorrowed(cldimemref *self, const cldimemref *borrow);
+/* Construct a cldimemref with a copy of another memory block. */
+CLDISTAT cldiInitMemrefCopy(cldimemref *self, const cldimemref *copy);
+/* Construct a cldimemref as a new block. */
+CLDISTAT cldiInitMemrefNewBlock(cldimemref *self, clditypeinfo_t block_type, int flags);
+CLDISTAT cldiInitMemrefNewBlockEx(cldimemref *self, clditypeinfo_t block_type, int flags, cldimblkdestr_t destructor);
+/* Construct a cldimemref as a new array block. */
+CLDISTAT cldiInitMemrefNewArray(cldimemref *self, clditypeinfo_t block_type, size_t array_size, int flags);
+CLDISTAT cldiInitMemrefNewArrayEx(cldimemref *self, clditypeinfo_t block_type, size_t array_size, int flags, cldimblkdestr_t destructor);
+/* Construct a cldimemref as a new block on a particular heap. */
+CLDISTAT cldiInitMemrefNewBlockOnHeap(cldimemref *self, cldiheap_t *heap, clditypeinfo_t block_type, int flags);
+CLDISTAT cldiInitMemrefNewBlockOnHeapEx(cldimemref *self, cldiheap_t *heap, clditypeinfo_t block_type, int flags, cldimblkdestr_t destructor);
+/* Construct a cldimemref as a new array block on a particular heap. */
+CLDISTAT cldiInitMemrefNewArrayOnHeap(cldimemref *self, cldiheap_t *heap, clditypeinfo_t block_type, size_t array_size, int flags);
+CLDISTAT cldiInitMemrefNewArrayOnHeapEx(cldimemref *self, cldiheap_t *heap, clditypeinfo_t block_type, size_t array_size, int flags, cldimblkdestr_t destructor);
+/* Make a new instance and pass it over the stack -- Corresponding to constructors. */
+cldimemref cldiMakeMemref();
+cldimemref cldiMakeMemrefExistingID(cldimblkid_t blkid);
+cldimemref cldiMakeMemrefCopyID(cldimblkid_t blkid);
+cldimemref cldiMakeMemrefOnHeap(cldiheap_t *heap, cldimblkid_t blkid);
+cldimemref cldiMakeMemrefCopyOnHeap(cldiheap_t *heap, cldimblkid_t blkid);
+cldimemref cldiMakeMemrefBorrowed(const cldimemref *borrow);
+cldimemref cldiMakeMemrefCopy(const cldimemref *copy);
+cldimemref cldiMakeMemrefNewBlock(clditypeinfo_t block_type, int flags);
+cldimemref cldiMakeMemrefNewArray(clditypeinfo_t block_type, size_t array_size, int flags);
+cldimemref cldiMakeMemrefNewBlockOnHeap(cldiheap_t *heap, clditypeinfo_t block_type, int flags);
+cldimemref cldiMakeMemrefNewArrayOnHeap(cldiheap_t *heap, clditypeinfo_t block_type, size_t array_size, int flags);
+#define    cldiMemrefBorrow cldiMakeMemrefBorrowed
+
+/* Drop the memory block and memref object (set to blank state to be written over
+.  again or deleted). */
+CLDISTAT              cldiDropMemref(cldimemref *drop);
+
+/* Get the cldimemref's heap. */
+cldiheap_t*           cldiMemrefGetHeap(const cldimemref *self);
+/* Return the address of a cldimemref object, if the current thread is missing
+.  either read or write priviledges, this function returns null and passes a
+.  READONLY error (missing only write privs) or NO_ACCESS error (missing ALL
+.  privs) to CLDI_ERRNO. */
+void*                 cldiMemrefGetAddress(const cldimemref *self);
+/* Return the address of a cldimemref object in const (readonly) mode, if the
+.  current thread is missing read priviledges, this function returns null and
+.  passes a NO_ACCESS error to CLDI_ERRNO. */
+const void*           cldiMemrefGetConstAddress(const cldimemref *self);
+/* Get the cldimemref's block ID. */
+cldimblkid_t          cldiMemrefGetBlockID(const cldimemref *self);
+/* Get the cldimemref's block type info. */
+const clditypeinfo_t* cldiMemrefGetBlockType(const cldimemref *self);
+/* Get the owner of the cldimemref object's memory block (may not be the current
+.  thread). */
+cldipid_t             cldiMemrefGetBlockOwner(const cldimemref *self);
+/* Get the owner of the cldimemref object itself. */
+cldipid_t             cldiMemrefGetOwner(const cldimemref *self);
+
+/* Check if the cldimemref is null. */
+bool                  cldiMemrefIsNull(const cldimemref *self);
+/* Check if the cldimemref is non-null. */
+bool                  cldiMemrefIsNonNull(const cldimemref *self);
+/* Check if the cldimemref is active. */
+bool                  cldiMemrefIsActive(const cldimemref *self);
+/* Check if the cldimemref is inactive. */
+bool                  cldiMemrefIsInactive(const cldimemref *self);
+/* Check if the cldimemref is active by an ID, as opposed to a raw pointer. */
+bool                  cldiMemrefHasActiveID(const cldimemref *self);
+/* Check if the cldimemref is not active by an ID, instead it is active by a raw
+.  pointer. */
+bool                  cldiMemrefHasRawPtr(const cldimemref *self);
+/* Check if the cldimemref is borrowing its reference. */
+bool                  cldiMemrefIsBorrowing(const cldimemref *self);
+/* Check if the cldimemref is non-null. */
+bool                  cldiMemrefIsBlockOwner(const cldimemref *self);
+/* Check if the block is currently shared between multiple blocks. */
+bool                  cldiMemrefBlockIsShared(const cldimemref *self);
+
+
 /* Methods associated with heap objects: */
+
+// Function type alias that allocates a memory block and returns a cldimemref
+// for said block over the stack.
+cldiTemplSupplier(cldimemref, cldiallocator_t);   // cldimemref  <method-name>()
+
+/* Executes a memory block allocator function (that returns its cldimemref over
+.  the stack) under the context of a specified heap. */
+cldimemref  cldiHeapCallAllocator(cldiheap_t *heap, cldiallocator_t allocator);
 
 // The default amount of blocks that a heap will track before its capacity is
 // manually altered.
 #define CLDI_DEFAULT_MBLK_BUFSIZE 25
 
-// A container for the current thread's main heap.
-extern cldiheap_t CLDI_CURRENT_HEAP;
+// A reference to the current thread's default heap.
+extern cldiheap_t *CLDI_CURRENT_HEAP;
+// Reservation for a heap to initialize after program start and link to
+// CLDI_CURRENT_HEAP until modified (or unless modified first).
+extern cldiheap_t  _CLDI_ENTRY_HEAP;
 
 cldiheap_t*    cldiGetCurrentHeap();
+CLDISTAT       cldiSetCurrentHeap(cldiheap_t *set_to);
 cldisysheap_t  cldiGetCurrentSysheap();
 
 CLDISTAT       cldiInitHeap(cldiheap_t *self);
@@ -200,27 +319,33 @@ cldiheap_t*    cldiNewSysheap(cldiheap_t *self, cldisysheap_t sysheap);
 cldiheap_t*    cldiNewSysheapBuf(cldiheap_t *self, cldisysheap_t sysheap, size_t bufsize);
 
 const char*    cldiGetHeapName(const cldiheap_t *self);
-
+cldimemref     cldiGetHeapNameW(const cldiheap_t *self);
 CLDISTAT       cldiSetHeapName(cldiheap_t *self, const char *name);
 CLDISTAT       cldiSetHeapNameW(cldiheap_t *self, const wchar_t *name);
 
-cldimblkid_t   cldiHeapNewBlock(cldiheap_t *self, size_t total_size, int flags);
-CLDISTAT       cldiHeapShareBlock(const cldiheap_t *self, cldimblkid_t blk);
+cldimblkid_t   cldiHeapNewBlock(cldiheap_t *self, clditypeinfo_t type, int flags);
+cldimblkid_t   cldiHeapNewArray(cldiheap_t *self, clditypeinfo_t type, size_t array_size, int flags);
+cldimblkid_t   cldiHeapNewPendingBlock(cldiheap_t *self, clditypeinfo_t type, int flags);
+cldimblkid_t   cldiHeapNewPendingArray(cldiheap_t *self, clditypeinfo_t type, size_t array_size, int flags);
+CLDISTAT       cldiHeapBorrowBlock(const cldiheap_t *self, cldimblkid_t blk);
 CLDISTAT       cldiHeapClaimBlock(const cldiheap_t *self, cldimblkid_t blk);
 CLDISTAT       cldiHeapDropBlock(cldiheap_t *self, cldimblkid_t blk);
 
 void*          cldiHeapGetBlockAddr(const cldiheap_t *self, cldimblkid_t blk);
 const void*    cldiHeapGetBlockConstAddr(const cldiheap_t *self, cldimblkid_t blk);
 cldimblkstat_t cldiHeapGetBlockStatus(const cldiheap_t *self, cldimblkid_t blk);
+int            cldiHeapGetBlockRefCount(const cldiheap_t *self, cldimblkid_t blkid);
 size_t         cldiHeapGetBlockSize(const cldiheap_t *self, cldimblkid_t blk);
-int            cldiHeapGetBlockPerms(const cldiheap_t *self, cldimblkid_t blk);
+size_t         cldiHeapGetBlockCapacity(const cldiheap_t *self, cldimblkid_t blkid);
 
+int            cldiHeapGetBlockPerms(const cldiheap_t *self, cldimblkid_t blk);
 CLDISTAT       cldiHeapSetBlockPerms(const cldiheap_t *self, cldimblkid_t blk, int perms);
 CLDISTAT       cldiHeapAddBlockPerms(const cldiheap_t *self, cldimblkid_t blk, int perms);
 CLDISTAT       cldiHeapRemoveBlockPerms(const cldiheap_t *self, cldimblkid_t blk, int perms);
 CLDISTAT       cldiHeapClearBlockPerms(const cldiheap_t *self, cldimblkid_t blk);
 
-bool           cldiBlockStatusCheck(const cldiheap_t *self, cldimblkid_t blk, cldimblkstat_t stat);
+bool           cldiBlockStatIs(cldimblkid_t blk, cldimblkstat_t check_stat);
+bool           cldiBlockStatOnHeapIs(const cldiheap_t *self, cldimblkid_t blk, cldimblkstat_t stat);
 bool           cldiHeapIsBlockActive(const cldiheap_t *self, cldimblkid_t blk);
 bool           cldiHeapIsBlockPending(const cldiheap_t *self, cldimblkid_t blk);
 bool           cldiHeapIsBlockHole(const cldiheap_t *self, cldimblkid_t blk);
@@ -238,29 +363,7 @@ bool           cldiIsEnvHeap(const cldiheap_t *self);
 bool           cldiIsLowFragHeap(const cldiheap_t *self);
 
 
-/* Methods associated with memref objects: */
-
-cldiTemplSupplier(cldimemref, cldiallocator_t);   // cldimemref  <method-name>()
-
-/* Executes a memory block allocator function (that returns its memref over the
-.  stack) under the context of a specified heap. */
-cldimemref  RunAllocator(cldiheap_t *heap, cldiallocator_t allocator);
-
-#if defined(__cplusplus) && CLDI_C_ONLY == false
-}
-#endif
-struct _CLDIMEMREF
-{
-	clditypeinfo_t  objtype;
-	size_t          objcount;
-	cldimblkdestr_t destructor;
-	void           *ptr;
-	cldiheap_t     *heap;
-	cldimblkid_t    id;
-	cldipid_t       owner;
-	bool active, activeid, shared;
-};
-#if defined(__cplusplus) && CLDI_C_ONLY == true
+#ifdef __cplusplus
 }
 #endif
 
