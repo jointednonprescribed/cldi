@@ -74,6 +74,7 @@ typedef enum _CLDICSTDEC
 } CLDI_CSTDLIB_ERRCONTEXT;
 
 /* Globally-Defined String Constants */
+extern const char *const CLDI_NO_ERRNAME;
 extern const char *const CLDI_ERRNAME_WDEFRAG_RECOMMENDED;
 extern const char *const CLDI_ERRNAME_WLVL3;
 extern const char *const CLDI_ERRNAME_WLVL2;
@@ -105,6 +106,7 @@ extern const char *const CLDI_ERRNAME_ENOT_WRITABLE;
 extern const char *const CLDI_ERRNAME_ENOT_EXECUTABLE;
 extern const char *const CLDI_ERRNAME_ENONEXISTENT;
 extern const char *const CLDI_ERRNAME_EINCOMPATIBLE_TYPE;
+extern const char *const CLDI_NO_ERRDESC;
 extern const char *const CLDI_ERRDESC_WDEFRAG_RECOMMENDED;
 extern const char *const CLDI_ERRDESC_WLVL3;
 extern const char *const CLDI_ERRDESC_WLVL2;
@@ -143,59 +145,21 @@ typedef struct _CLDIEXCEPTION
 	const char *exc_name, *exc_desc;
 	void       *function;
 	CLDISTAT    ec; // ec = "error code"
-
-#if defined(__cplusplus) && C_ONLY_MODE == false
-
-	/* Create an error using just an error code. */
-	_CLDIEXCEPTION(CLDISTAT ec);
-	/* Create an error using an error code and a description (default mode). */
-	_CLDIEXCEPTION(CLDISTAT ec, const char *desc);
-	/* Create an error using an error code, name, and description. */
-	_CLDIEXCEPTION(CLDISTAT ec, const char *name, const char *desc);
-	/* Create an error using an error code, specified function address (the function
-	.  that was running when the error occurred), and description. */
-	_CLDIEXCEPTION(CLDISTAT ec, void *function, const char *desc);
-	/* Create an error using an error code, specified function address (the function
-	.  that was running when the error occurred), name, and description. */
-	_CLDIEXCEPTION(CLDISTAT ec, void *function, const char *name, const char *desc);
-
-	/* Throw an error using just an error code. */
-	static cldiexc_t* Throw(CLDISTAT ec);
-	/* Throw an error using an error code and a description (default mode). */
-	static cldiexc_t* Throw(CLDISTAT ec, const char *desc);
-	/* Throw an error using an error code, name, and description. */
-	static cldiexc_t* Throw(CLDISTAT ec, const char *name, const char *desc);
-	/* Throw an error using an error code, specified function address (the function
-	.  that was running when the error occurred), and description. */
-	static cldiexc_t* Throw(CLDISTAT ec, void *function, const char *desc);
-	/* Throw an error using an error code, specified function address (the function
-	.  that was running when the error occurred), name, and description. */
-	static cldiexc_t* Throw(CLDISTAT ec, void *function, const char *name, const char *desc);
-	/* Throw the current error. */
-	cldiexc_t Throw() const;
-
-	CLDISTAT    GetErrno();
-	void*       GetFunction();
-	const char* GetName();
-	const char* GetDesc();
-	bool        SpecifiesFunction();
-
-	/* Check if an exception is a warning. */
-	bool IsWarning();
-	/* Check if an exception is an error. */
-	bool IsError();
-	/* Check if an exception is success. */
-	bool IsSuccess();
-	/* Check if an exception is permissible. */
-	bool IsPermissible();
-
-#endif
 } cldiexception_t, cldiexc_t, cldierror_t;
 /* This is a global variable for passing errors while keeping return type. */
 extern cldiexc_t CLDI_ERROR;
 // This macro is defined as a QoD feature, as well as a backwards-compatibility
 // feature for code written before the cldiexception_t type was committed.
 #define CLDI_ERRNO (CLDI_ERROR.ec)
+/* This macro places required error control on the global CLDI_ERROR variable
+.  at the beginning of a method by clearing the value of CLDI_ERROR. */
+#define CLDI_ECTRL \
+	CLDI_ERROR.exc_name=CLDI_ERRNAME_SUCCESS; \
+	CLDI_ERROR.exc_desc=CLDI_ERRDESC_SUCCESS; \
+	CLDI_ERROR.function=NULL;   \
+	CLDI_ERROR.ec=CLDI_SUCCESS;
+/* This macro is used for error catch statements. */
+#define CLDI_CATCH if(!cldiIsPermissible())
 
 /* Methods associated with CLDISTAT values: */
 
@@ -204,9 +168,13 @@ CLDISTAT cldiConvCStdlibError(CLDI_CSTDLIB_ERRCONTEXT error_context, int error);
 // - Convert from C Standard Library "errno" flag
 CLDISTAT cldiConvCStdlibErrno(CLDI_CSTDLIB_ERRCONTEXT error_context);
 
-/* Get the descriptor string associated with an error code. */
+/* Get the default descriptor string associated with an error code or status
+.  value. */
 const char* cldiGetErrorName(CLDISTAT e);
 const char* cldiGetErrnoName(); // Tests the global variable `errno`
+/* Get the default description associated with an error code or status value. */
+const char* cldiGetErrorDesc(CLDISTAT e);
+const char* cldiGetErrnoDesc();
 
 /* Check if an status value is a warning. */
 #define CLDI_STAT_ISWARNING(stat) (stat) < 0
