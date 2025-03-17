@@ -75,6 +75,27 @@ namespace cldi
 	inline exc_t &ERROR = CLDI_ERROR;
 	inline STAT  &ERRNO = CLDI_ERRNO;
 
+	cldiexc_t   (&ErrEc)(CLDISTAT) = ::cldierrec;
+	cldiexc_t   (&Err)(CLDISTAT, const char*) = ::cldierr;
+	cldiexc_t   (&ErrN)(CLDISTAT, const char*, const char*) = ::cldinerr;
+	cldiexc_t   (&ErrF)(CLDISTAT , void*, const char*) = ::cldierrf;
+	cldiexc_t   (&ErrNF)(CLDISTAT, void*, const char*, const char*) = ::cldinerrf;
+	cldiexc_t*  (&ThrowEc)(CLDISTAT) = ::cldithrowec;
+	cldiexc_t*  (&ThrowD)(CLDISTAT, const char*) = ::cldithrowd;
+	cldiexc_t*  (&ThrowN)(CLDISTAT, const char*, const char*) = ::cldinthrow;
+	cldiexc_t*  (&ThrowF)(CLDISTAT, void*, const char*) = ::cldithrowf;
+	cldiexc_t*  (&ThrowNF)(CLDISTAT, void*, const char*, const char*) = ::cldinthrowf;
+	cldiexc_t*  (&Throw)(cldiexc_t*) = ::cldithrow;
+	CLDISTAT    (&ExcGetErrno)(cldiexc_t*) = ::cldiExcGetErrno;
+	void*       (&ExcGetFunction)(cldiexc_t*) = ::cldiExcGetFunction;
+	const char* (&ExcGetName)(cldiexc_t*) = ::cldiExcGetName;
+	const char* (&ExcGetDesc)(cldiexc_t*) = ::cldiExcGetDesc;
+	bool        (&ExcSpecifiesFunction)(cldiexc_t*) = ::cldiExcSpecifiesFunction;
+	bool        (&ExcIsWarning)(cldiexc_t*) = ::cldiExcIsWarning;
+	bool        (&ExcIsError)(cldiexc_t*) = ::cldiExcIsError;
+	bool        (&ExcIsSuccess)(cldiexc_t*) = ::cldiExcIsSuccess;
+	bool        (&ExcIsPermissible)(cldiexc_t*) = ::cldiExcIsPermissible;
+
 	/* Function for converting C++ standard library errors into CLDISTAT error
 	.  codes. */
 	template <typename _E>
