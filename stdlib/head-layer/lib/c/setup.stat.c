@@ -219,15 +219,17 @@ void _cldithrowexc(cldiexc_t *exc)
 			const char *excname = (exc->exc_name == NULL)? cldiGetErrorName(ec) : exc->exc_name;
 			const char *excdesc = (exc->exc_desc == NULL)? cldiGetErrorDesc(ec) : exc->exc_desc;
 
-			if (exc->function != NULL)
-				fprintf(stderr, "Encountered an exception in function %p ", exc->function);
-			else
-				fprintf(stderr, "Encountered an exception ");
 			// continue error message with error name, desc, and code
-			fprintf(stderr, " with code %d (%s):\n\t%s\n", ec, excname, excdesc);
+			fprintf(stderr, "Encountered an exception with code %d (%s):\n", ec, excname);
+			// function is specified, print first traceback message.
+			if (exc->function != NULL)
+				fprintf(stderr, "\tIn function <%p>: %s\n", exc->function, excdesc);
+			// else, just print error description
+			else
+				fprintf(stderr, "\t%s\n", excdesc);
 		}
 	} else {
-		fprintf(stderr, "Attempt was made to throw nullptr exception...\n");
+		fprintf(stderr, "Attempt was made to throw nullptr as exception...\n");
 	}
 }
 cldiexc_t* cldithrowec(CLDISTAT __ec)
@@ -283,14 +285,23 @@ cldiexc_t* cldithrow(cldiexc_t *self)
 	return &CLDI_ERROR;
 }
 
-CLDISTAT    cldiExcGetErrno(cldiexc_t *self)
+void cldiAddTraceback(void *func, const char *desc)
+{
+	// THIS CODE IS DUE TO CHANGE ONCE THREAD-SAFE IO FUNCTIONS ARE ADDED
+
+	if (!(CLDI_STAT_ISSUCCESS(CLDI_ERRNO))) {
+		fprintf(stderr, "\tIn function <%p>: %s\n", func, desc);
+	}
+}
+
+CLDISTAT cldiExcGetErrno(cldiexc_t *self)
 {
 	if (self == NULL)
 		return CLDI_ENULL_ARG;
 	else
 		return self->ec;
 }
-void*       cldiExcGetFunction(cldiexc_t *self)
+void* cldiExcGetFunction(cldiexc_t *self)
 {
 	if (self == NULL)
 		return CLDI_ENULL_ARG;
@@ -311,13 +322,14 @@ const char* cldiExcGetDesc(cldiexc_t *self)
 	else
 		return self->exc_desc;
 }
-bool        cldiExcSpecifiesFunction(cldiexc_t *self)
+bool cldiExcSpecifiesFunction(cldiexc_t *self)
 {
 	if (self == NULL)
 		return false;
 	else
 		return self->function != NULL;
 }
+
 bool cldiExcIsWarning(cldiexc_t *self)
 {
 	if (self == NULL)
