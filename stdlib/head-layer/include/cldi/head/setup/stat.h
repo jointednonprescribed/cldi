@@ -223,10 +223,18 @@ cldiexc_t* cldinthrowf(CLDISTAT ec, void *function, const char *name, const char
 /* Throw an exception object globally on the current thread. */
 cldiexc_t* cldithrow(cldiexc_t *self);
 
+/* Add a traceback message to the current thrown error. */
+void       cldiAddTraceback(void *function, const char *desc);
+
+/* Get the error code of an exception. */
 CLDISTAT    cldiExcGetErrno(cldiexc_t *self);
+/* Get the specified calling function from an exception. */
 void*       cldiExcGetFunction(cldiexc_t *self);
+/* Get the name of an exception. */
 const char* cldiExcGetName(cldiexc_t *self);
+/* Get the description of an exception. */
 const char* cldiExcGetDesc(cldiexc_t *self);
+/* Check the exception for a specified calling function. */
 bool        cldiExcSpecifiesFunction(cldiexc_t *self);
 
 /* Check if an exception is a warning. */
