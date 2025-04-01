@@ -9,7 +9,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* Process ID type */
+/* Process ID and Group ID type */
 #if CLDI_PLATFORM_UNIXLIKE == true
 typedef pid_t cldipid_t;
 #elif CLDI_PLATFORM == CLDI_WINDOWS
@@ -17,8 +17,21 @@ typedef DWORD cldipid_t;
 #else
 typedef uint32_t cldipid_t;
 #endif
+typedef int cldigid_t;
+#define CLDI_GID_ISINVALID(gid) ((gid) < 0)
+#define CLDI_GID_NULL    -1
+#define CLDI_DEFAULT_GID 0
+
+/* Ownership ID type */
+typedef struct _CLDIOID
+{
+	cldipid_t owner;
+	cldigid_t group;
+} cldioid_t, cldiownerid_t;
 
 cldipid_t cldiGetCurrentPID();
+cldigid_t cldiGetCurrentGID();
+cldioid_t cldiGetCurrentOID();
 
 
 /* Maximum-precision floating point type: */
