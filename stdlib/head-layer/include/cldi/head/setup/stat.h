@@ -29,6 +29,8 @@ typedef enum _CLDISTAT
 	CLDI_CMPLESS = CLDI_CMPL,
 	CLDI_CMPGREATER = CLDI_CMPG,
 
+	CLDI_ELVL0 = CLDI_CMPG,
+	
 	CLDI_EUNKNOWN,
 
 	CLDI_ENO_IMPL,
@@ -159,7 +161,7 @@ extern cldiexc_t CLDI_ERROR;
 	CLDI_ERROR.function=NULL;   \
 	CLDI_ERROR.ec=CLDI_SUCCESS;
 /* This macro is used for error catch statements. */
-#define CLDI_CATCH if(!cldiIsPermissible())
+#define CLDI_CATCH if(CLDI_STAT_NOTPERMISSIBLE(CLDI_ERROR.ec))
 
 /* Methods associated with CLDISTAT values: */
 
@@ -177,19 +179,23 @@ const char* cldiGetErrorDesc(CLDISTAT e);
 const char* cldiGetErrnoDesc();
 
 /* Check if an status value is a warning. */
-#define CLDI_STAT_ISWARNING(stat) (stat) < 0
+#define CLDI_STAT_ISWARNING(stat)  ((stat) < 0)
+#define CLDI_STAT_NOTWARNING(stat) ((stat) >= 0)
 bool cldiStatWarning(CLDISTAT e); // Registers the passed stat value to this shared object's errno and checks for warning
 bool cldiIsWarning(); // Checks the current shared object's errno value
 /* Check if an status value is an error. */
-#define CLDI_STAT_ISERROR(stat) (stat) > 0
+#define CLDI_STAT_ISERROR(stat)  ((stat) > 0)
+#define CLDI_STAT_NOTERROR(stat) ((stat) <= 0)
 bool cldiStatError(CLDISTAT e); // Registers the passed stat value to this shared object's errno and checks for error
 bool cldiIsError(); // Checks the current shared object's errno value
 /* Check if an status value is success. */
-#define CLDI_STAT_ISSUCCESS(stat) (stat) == 0
+#define CLDI_STAT_ISSUCCESS(stat)  ((stat) == 0)
+#define CLDI_STAT_NOTSUCCESS(stat) ((stat) != 0)
 bool cldiStatSuccess(CLDISTAT e); // Registers the passed stat value to this shared object's errno and checks for success
 bool cldiIsSuccess(); // Checks the current shared object's errno value
 /* Check if an status value is permissible. */
-#define CLDI_STAT_ISPERMISSIBLE(stat) (stat) <= 0 && (stat) <= CLDI_WPERMIT_LEVEL
+#define CLDI_STAT_ISPERMISSIBLE(stat)  ((stat) <= CLDI_ELVL0 && (stat) >= CLDI_WPERMIT_LEVEL)
+#define CLDI_STAT_NOTPERMISSIBLE(stat) ((stat) > CLDI_ELVL0 || (stat) < CLDI_WPERMIT_LEVEL)
 bool cldiStatPermissible(CLDISTAT e); // Registers the passed stat value to this shared object's errno and checks for warning
 bool cldiIsPermissible(); // Checks the current shared object's errno value
 
