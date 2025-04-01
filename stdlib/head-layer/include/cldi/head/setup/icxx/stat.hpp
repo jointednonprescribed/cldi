@@ -26,6 +26,12 @@ namespace cldi
 	constexpr STAT TRUE = ::CLDI_TRUE;
 	constexpr STAT FALSE = ::CLDI_FALSE;
 
+	constexpr STAT CMPE = ::CLDI_CMPE;
+	constexpr STAT CMPL = ::CLDI_CMPL;
+	constexpr STAT CMPG = ::CLDI_CMPG;
+
+	constexpr STAT ELVL0 = ::CLDI_ELVL0;
+
 	constexpr STAT EUNKNOWN = ::CLDI_EUNKNOWN;
 
 	constexpr STAT ENO_IMPL = ::CLDI_ENO_IMPL;
