@@ -13,8 +13,12 @@
 namespace cldi
 {
 	using pid_t = ::cldipid_t;
+	using gid_t = ::cldigid_t;
+	using oid_t = ::cldioid_t;
 
-	inline pid_t (&GetCurrentPID)() = cldiGetCurrentPID;
+	inline pid_t (&GetCurrentPID)() = ::cldiGetCurrentPID;
+	inline gid_t (&GetCurrentGID)() = ::cldiGetCurrentGID;
+	inline oid_t (&GetCurrentOID)() = ::cldiGetCurrentOID;
 
 	using floatmax_t    = ::cldifpm_t;
 	using fpm_t         = ::cldifpm_t;

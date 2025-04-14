@@ -162,6 +162,19 @@ extern cldiexc_t CLDI_ERROR;
 	CLDI_ERROR.ec=CLDI_SUCCESS;
 /* This macro is used for error catch statements. */
 #define CLDI_CATCH if(CLDI_STAT_NOTPERMISSIBLE(CLDI_ERROR.ec))
+#if defined(__cldic)
+#	define CLDITHROWS   throws()
+#	define CLDITHROWEX  throws
+#	define CLDINOEXCEPT noexcept
+#elif CLDI_C_ONLY == false
+#	define CLDITHROWS       noexcept(false)
+#	define CLDITHROWEX(...) noexcept(false)
+#	define CLDINOEXCEPT     noexcept
+#else
+#	define CLDITHROWS
+#	define CLDITHROWEX(...)
+#	define CLDINOEXCEPT
+#endif
 
 /* Methods associated with CLDISTAT values: */
 
