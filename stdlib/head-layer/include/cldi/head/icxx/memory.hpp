@@ -24,21 +24,40 @@ namespace cldi
 	constexpr HEAPFLAG DEFAULT_SYSHEAP = ::CLDI_DEFAULT_SYSHEAP;
 	constexpr HEAPFLAG DEFAULT_ENVHEAP = ::CLDI_DEFAULT_ENVHEAP;
 
+	inline int (&ConvToSysHeapPerms)(int) = ::cldiConvToSysHeapPerms;
+	inline int (&ConvToSysHeapFlags)(int) = ::cldiConvToSysHeapFlags;
+
 	/* Alias for CLDIMBLKFLAG enum type */
-	using MBLKPERM      = CLDIMBLKFLAG;
+	using MBLK_FLAG = CLDIMBLKFLAG;
 	/* Enum values from _CLDIMBLKPERMS: */
-	constexpr MBLKPERM MBLK_OREAD = ::CLDI_MBLK_OREAD;
-	constexpr MBLKPERM MBLK_OWRTE = ::CLDI_MBLK_OWRTE;
-	constexpr MBLKPERM MBLK_OEXEC = ::CLDI_MBLK_OEXEC;
-	constexpr MBLKPERM MBLK_GREAD = ::CLDI_MBLK_GREAD;
-	constexpr MBLKPERM MBLK_GWRTE = ::CLDI_MBLK_GWRTE;
-	constexpr MBLKPERM MBLK_GEXEC = ::CLDI_MBLK_GEXEC;
-	constexpr MBLKPERM MBLK_PREAD = ::CLDI_MBLK_PREAD;
-	constexpr MBLKPERM MBLK_PWRTE = ::CLDI_MBLK_PWRTE;
-	constexpr MBLKPERM MBLK_PEXEC = ::CLDI_MBLK_PEXEC;
-	constexpr MBLKPERM MBLK_READ  = ::CLDI_MBLK_READ;
-	constexpr MBLKPERM MBLK_WRITE = ::CLDI_MBLK_WRITE;
-	constexpr MBLKPERM MBLK_EXEC  = ::CLDI_MBLK_EXEC;
+	condtexpr MBLK_FLAG MBLK_OREAD = ::CLDI_MBLK_OREAD;
+	condtexpr MBLK_FLAG MBLK_OWRTE = ::CLDI_MBLK_OWRTE;
+	condtexpr MBLK_FLAG MBLK_OEXEC = ::CLDI_MBLK_OEXEC;
+	condtexpr MBLK_FLAG MBLK_GREAD = ::CLDI_MBLK_GREAD;
+	condtexpr MBLK_FLAG MBLK_GWRTE = ::CLDI_MBLK_GWRTE;
+	condtexpr MBLK_FLAG MBLK_GEXEC = ::CLDI_MBLK_GEXEC;
+	condtexpr MBLK_FLAG MBLK_PREAD = ::CLDI_MBLK_PREAD;
+	condtexpr MBLK_FLAG MBLK_PWRTE = ::CLDI_MBLK_PWRTE;
+	condtexpr MBLK_FLAG MBLK_PEXEC = ::CLDI_MBLK_PEXEC;
+	condtexpr MBLK_FLAG MBLK_NO_AUTH = ::CLDI_MBLK_NO_AUTH;
+	condtexpr MBLK_FLAG MBLK_PAUTH = ::CLDI_MBLK_PAUTH;
+	condtexpr MBLK_FLAG MBLK_GAUTH = ::CLDI_MBLK_GAUTH;
+	condtexpr MBLK_FLAG MBLK_OAUTH = ::CLDI_MBLK_OAUTH;
+	condtexpr MBLK_FLAG MBLK_ACTIVEOWNER = ::CLDI_MBLK_ACTIVEOWNER;
+	/* Defaults */
+	contexpr MBLK_FLAG MBLK_DEFAULT_AUTH  = ::CLDI_DEFAULT_MBLK_AUTH;
+	contexpr MBLK_FLAG MBLK_DEFAULT_PERMS = ::CLDI_DEFAULT_MBLK_PERMS;
+	contexpr MBLK_FLAG MBLK_PRIVATE_PERMS = ::CLDI_PRIVATE_MBLK_PERMS;
+	/* Aliases */
+	contexpr MBLK_FLAG MBLK_READ          = ::CLDI_MBLK_READ;
+	contexpr MBLK_FLAG MBLK_WRITE         = ::CLDI_MBLK_WRITE;
+	contexpr MBLK_FLAG MBLK_EXEC          = ::CLDI_MBLK_EXEC;
+	contexpr MBLK_FLAG MBLK_OWNER_PERMS   = ::CLDI_MBLK_OWNER_PERMS;
+	contexpr MBLK_FLAG MBLK_GROUP_PERMS   = ::CLDI_MBLK_GROUP_PERMS;
+	contexpr MBLK_FLAG MBLK_PUBLIC_PERMS  = ::CLDI_MBLK_PUBLIC_PERMS;
+
+	inline int (&ConvToSysMemPerms)(int) = ::cldiConvToSysMemPerms;
+	inline int (&ConvToSysMemFlags)(int) = ::cldiConvToSysMemFlags;
 
 	/* Alias for cldimblkstat_t enum type */
 	using mblkstat_t    = ::cldimblkstat_t;
@@ -55,6 +74,9 @@ namespace cldi
 	using heapheader_t  = ::CLDI_HEAP_HEADER;
 	/* Alias for cldisysheap_t (system heap reference) */
 	using sysheap_t     = ::cldisysheap_t;
+	// - Predefined values for sysheap_t
+	constexpr sysheap_t SYSHEAP_NULL = CLDISYSHEAP_NULL;
+	constexpr sysheap_t SYSHEAP_CURRENT = CLDISYSHEAP_CURRENT;
 	/* Alias for cldimblkid_t (memory block ID) */
 	using mblkid_t      = ::cldimblkid_t;
 
@@ -81,23 +103,29 @@ namespace cldi
 
 		heap_t();
 		heap_t(size_t heapsize, int flags);
-		heap_t(size_t bufsize, size_t heapsize, int flags);
-		heap_t(sysheap_t sysheap);
+		heap_t(size_t heapsize, size_t bufsize=DEFAULT_MBLK_BUFSIZE, int flags=MBLK_);
+		heap_t(sysheap_t sysheap, size_t bufsize=DEFAULT_MBLK_BUFSIZE);
 		heap_t(const _gheap_t &conv);
 		heap_t(const heap_t &rhv);
 		~heap_t();
 
 		STAT Drop();
 
-		static heap_t MakeHeapFromCurrent();
-		STAT MakeCurrentHeap();
-		STAT SetToCurrentHeap();
+		operator _gheap_t() const;
 
-		size_t GetTotalHeapSize() const;
-		size_t GetHeapSize() const;
-		size_t MemoryUsage() const;
-		double MemoryUsagePercent() const;
-		size_t MemoryRemaining() const;
+		static heap_t MakeHeapFromCurrent();
+		STAT SetAsCurrentHeap();
+		STAT AdoptCurrentHeap();
+
+		size_t          TotalSize() const;
+		size_t          Size() const;
+		size_t          MemoryUsage() const;
+		double          MemoryUsagePercent() const;
+		size_t          MemoryRemaining() const;
+		const char*     GetName() const;
+		memref<wchar_t> GetNameW();
+		STAT            SetName(const char *name);
+		STAT            SetName(const wchar_t *name);
 
 		template <typename _T>
 		mblkid_t   NewBlock(int flags)
@@ -137,7 +165,9 @@ namespace cldi
 		const void *const GetBlockConstAddr(mblkid_t blkid)        const;
 		STAT              GetBlockStatus(mblkid_t blkid)           const;
 		int               GetBlockPerms(mblkid_t blkid)            const;
-		cldipid_t         GetBlockOwner(mblkid_t blkid)            const;
+		oid_t             GetBlockOwner(mblkid_t blkid)            const;
+		pid_t             GetBlockOwnerThread(mblkid_t blkid)            const;
+		gid_t             GetBlockOwnerGroup(mblkid_t blkid)            const;
 		int               GetBlockRefCount(mblkid_t blkid)         const;
 		size_t            GetBlockSize(mblkid_t blkid)             const;
 		size_t            GetBlockCapacity(mblkid_t blkid)         const;
@@ -164,11 +194,6 @@ namespace cldi
 		bool IsSysheap() const;
 		bool IsEnvHeap() const;
 		bool IsLowFrag() const;
-
-		const char*     GetName() const;
-		memref<wchar_t> GetNameW();
-		STAT            SetName(const char *name);
-		STAT            SetName(const wchar_t *name);
 
 		template <typename _T>
 		memref<_T> CallAllocator(mblkallocator<_T> allocator)
@@ -204,20 +229,20 @@ namespace cldi
 
 	public:
 
-		bool MatchTypeInfo(const _gtypeinfo_t &info)
+		TYPE_COMPAT MatchTypeInfo(const _gtypeinfo_t &info)
 		{
 			return info.size == sizeof(_T) && info.templ == typeinfo_t<_T>::TEMPLATE;
 		}
-		bool MatchBlockType(const heap_t &heap, memblkid_t blkid)
+		TYPE_COMPAT MatchBlockType(const heap_t &heap, memblkid_t blkid)
 		{
 			_gtypeinfo_t info = heap->GetBlockType(blkid);
 			return info.size == sizeof(_T) && info.templ == typeinfo_t<_T>::TEMPLATE;
 		}
-		bool MatchBlockType(mblkid_t blkid)
+		TYPE_COMPAT MatchBlockType(mblkid_t blkid)
 		{
 			return MatchBlockType(*(this->heap), blkid);
 		}
-		bool MatchBlockType(const memref<_T> &ref)
+		TYPE_COMPAT MatchBlockType(const memref<_T> &ref)
 		{
 			return MatchBlockType(ref.id, ref.heap);
 		}
@@ -252,7 +277,7 @@ namespace cldi
 		{
 			errno = SUCCESS;
 
-			if (!MatchTypeInfo(rhv.objtype)) {
+			if (MatchTypeInfo(rhv.objtype) != TYPE_COMPAT_FULL) {
 				errno = EINCOMPATIBLE_TYPE;
 				return EINCOMPATIBLE_TYPE;
 			}
