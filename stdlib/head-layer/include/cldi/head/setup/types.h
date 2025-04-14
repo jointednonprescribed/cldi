@@ -4,11 +4,12 @@
 
 #include "includes.h"
 
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+
 /* Process ID and Group ID type */
 #if CLDI_PLATFORM_UNIXLIKE == true
 typedef pid_t cldipid_t;
