@@ -2,6 +2,7 @@
 /* This file contains definitions/checks for a number of settings macros that
 .  can be set to tweak or enable/disable library features. */
 
+#pragma cldic module head:settings
 #ifndef _cldi_head__SETTINGS_H
 #define _cldi_head__SETTINGS_H 1
 

@@ -77,7 +77,12 @@ typedef enum _CLDITYPETEMPL
 
 	CLDI_PTR_TYPE,
 
+	CLDI_CSTR_TYPE,
+	CLDI_WSTR_TYPE,
+
 	CLDI_STRUCT_TYPE,
+
+	CLDI_STR_TYPE = CLDI_CSTR_TYPE,
 } CLDI_TYPE_TEMPL, CLDI_TYPE_TEMPLATE;
 /* Type Info Record type */
 typedef struct _CLDITYPEINFO
@@ -89,7 +94,10 @@ typedef struct _CLDITYPEINFO
 /* Predefined templates for different types represented as clditypeinfo_t objects. */
 extern const clditypeinfo_t cldiNullTypeInfo;
 extern const clditypeinfo_t cldiCharTypeInfo;
+extern const clditypeinfo_t cldiCStrTypeInfo;
+#define                     cldiStrTypeInfo cldiCStrTypeInfo;
 extern const clditypeinfo_t cldiWCharTypeInfo;
+extern const clditypeinfo_t cldiWStrTypeInfo;
 extern const clditypeinfo_t cldiShortTypeInfo;
 extern const clditypeinfo_t cldiIntTypeInfo;
 extern const clditypeinfo_t cldiLongTypeInfo;
