@@ -34,12 +34,15 @@ namespace cldi
 
 	using TYPE_TEMPL= ::CLDI_TYPE_TEMPL;
 	using TYPE_TEMPLATE = ::CLDI_TYPE_TEMPL;
-	constexpr TYPE_TEMPL TYPE_TEMPL_NULL = ::CLDI_NULL_TYPE;
-	constexpr TYPE_TEMPL TYPE_TEMPL_INTEGER = ::CLDI_INTEGER_TYPE;
-	constexpr TYPE_TEMPL TYPE_TEMPL_INT = ::CLDI_INTEGER_TYPE;
-	constexpr TYPE_TEMPL TYPE_TEMPL_FLOAT = ::CLDI_FLOAT_TYPE;
-	constexpr TYPE_TEMPL TYPE_TEMPL_PTR = ::CLDI_PTR_TYPE;
-	constexpr TYPE_TEMPL TYPE_TEMPL_STRUCT = ::CLDI_STRUCT_TYPE;
+	constexpr TYPE_TEMPL NULL_TYPE = ::CLDI_NULL_TYPE;
+	constexpr TYPE_TEMPL INTEGER_TYPE = ::CLDI_INTEGER_TYPE;
+	constexpr TYPE_TEMPL INT_TYPE = ::CLDI_INTEGER_TYPE;
+	constexpr TYPE_TEMPL FLOAT_TYPE = ::CLDI_FLOAT_TYPE;
+	constexpr TYPE_TEMPL PTR_TYPE = ::CLDI_PTR_TYPE;
+	constexpr TYPE_TEMPL CSTR_TYPE = ::CLDI_CSTR_TYPE;
+	constexpr TYPE_TEMPL STR_TYPE = ::CLDI_STR_TYPE;
+	constexpr TYPE_TEMPL WSTR_TYPE = ::CLDI_WSTR_TYPE;
+	constexpr TYPE_TEMPL STRUCT_TYPE = ::CLDI_STRUCT_TYPE;
 
 	using _gtypeinfo_t  = ::clditypeinfo_t;
 	template <typename _T>
@@ -145,6 +148,25 @@ namespace cldi
 			return generic.size <= rhv.size;
 		}
 	};
+	/* Type Info Constants */
+	constexpr typeinfo_t<void> NullTypeInfo;
+	constexpr typeinfo_t<char> CharTypeInfo;
+	constexpr typeinfo_t<const char*> CStrTypeInfo;
+	constexpr typeinfo_t<const char*> StrTypeInfo;
+	constexpr typeinfo_t<wchar_t> WCharTypeInfo;
+	constexpr typeinfo_t<const wchar_t*> WStrTypeInfo;
+	constexpr typeinfo_t<short> ShortTypeInfo;
+	constexpr typeinfo_t<int> IntTypeInfo;
+	constexpr typeinfo_t<long> LongTypeInfo;
+	constexpr typeinfo_t<long long> LLongTypeInfo;
+	constexpr typeinfo_t<size_t> SizeTypeInfo;
+	constexpr typeinfo_t<float> FloatTypeInfo;
+	constexpr typeinfo_t<double> DoubleTypeInfo;
+	constexpr typeinfo_t<cldifpm_t> FPMTypeInfo;
+#if CLDI_LDBL_ENABLED == true
+	constexpr typeinfo_t<long double> LDoubleTypeInfo;
+#endif
+	constexpr typeinfo_t<const void*> PtrTypeInfo;
 
 	template <typename _T1, typename _T2>
 	class pair
