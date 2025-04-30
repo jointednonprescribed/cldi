@@ -1,8 +1,10 @@
 
+#pragma cldic module head:setup
 #ifndef _cldi_head__SETUP_H
 #define _cldi_head__SETUP_H 1
 
-#include "settings.h"
+#include "config.h"
+#pragma cldic require head:config
 
 
 
