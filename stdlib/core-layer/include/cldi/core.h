@@ -6,7 +6,17 @@
 
 
 
-
+/* Header Load Order:
+ * 
+ *   cldi/head.h
+ *    |
+ * core/
+ *   setup.h
+ * 
+ *  The last header may be included alone, as it will include all other headers
+ *  in chain.
+ */
+#include "core/setup.h"
 
 
 

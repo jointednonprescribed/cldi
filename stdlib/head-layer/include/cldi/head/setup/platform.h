@@ -2,7 +2,7 @@
 #ifndef _cldi_head__setup_PLATFORM_H
 #define _cldi_head__setup_PLATFORM_H 1
 
-#include "../settings.h"
+#include "../config.h"
 
 
 
