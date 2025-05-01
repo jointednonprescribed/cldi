@@ -1,8 +1,10 @@
 
+#pragma cldic module head:memory
 #ifndef _cldi_head__MEMORY_H
 #define _cldi_head__MEMORY_H 1
 
 #include "functypes.h"
+#pragma cldic require head:functypes
 
 #ifdef __cplusplus
 extern "C" {

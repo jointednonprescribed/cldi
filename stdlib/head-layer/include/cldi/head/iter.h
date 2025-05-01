@@ -1,8 +1,10 @@
 
+#pragma cldic module head:iter
 #ifndef _cldi_head__ITER_H
 #define _cldi_head__ITER_H 1
 
 #include "memory.h"
+#pragma cldic require head:memory
 
 #ifdef __cplusplus
 extern "C" {
