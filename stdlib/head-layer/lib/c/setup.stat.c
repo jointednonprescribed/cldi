@@ -71,11 +71,12 @@ const char *const CLDI_ERRDESC_ENOT_EXECUTABLE = "Data is not executable; Attemp
 const char *const CLDI_ERRDESC_ENONEXISTENT = "Attempted to reference a nonexistent entry.";
 const char *const CLDI_ERRDESC_EINCOMPATIBLE_TYPE = "Attempted conflation of incompatible or inconvertable data types.";
 
-cldiexc_t CLDI_ERROR = {
-	.exc_name = "SUCCESS",
-	.exc_desc = "No error occurred.",
+cldiexc_t CLDI_ERROR = (cldiexception_t){
+	.ec       = CLDI_SUCCESS,
+	.serialid = 0,
 	.function = NULL,
-	.ec       = CLDI_SUCCESS
+	.exc_name = "SUCCESS",
+	.exc_desc = "No error occurred."
 };
 
 const char* cldiGetErrorName(CLDISTAT e)
@@ -167,7 +168,8 @@ cldiexc_t cldierrec(CLDISTAT __ec)
 		.exc_name=cldiGetErrorName(__ec),
 		.exc_desc=CLDI_NO_ERRDESC,
 		.function=NULL,
-		.ec=__ec
+		.ec=__ec,
+		.serialid = 0
 	};
 }
 cldiexc_t cldierr(CLDISTAT __ec, const char *desc)
@@ -176,7 +178,8 @@ cldiexc_t cldierr(CLDISTAT __ec, const char *desc)
 		.exc_name=cldiGetErrorName(__ec),
 		.exc_desc=desc,
 		.function=NULL,
-		.ec=__ec
+		.ec=__ec,
+		.serialid = 0
 	};
 }
 cldiexc_t cldinerr(CLDISTAT __ec, const char *name, const char *desc)
@@ -185,7 +188,8 @@ cldiexc_t cldinerr(CLDISTAT __ec, const char *name, const char *desc)
 		.exc_name=name,
 		.exc_desc=desc,
 		.function=NULL,
-		.ec=__ec
+		.ec=__ec,
+		.serialid = 0
 	};
 }
 cldiexc_t cldierrf(CLDISTAT __ec, void *func, const char *desc)
@@ -194,7 +198,8 @@ cldiexc_t cldierrf(CLDISTAT __ec, void *func, const char *desc)
 		.exc_name=cldiGetError(__ec),
 		.exc_desc=desc,
 		.function=func,
-		.ec=__ec
+		.ec=__ec,
+		.serialid = 0
 	};
 }
 cldiexc_t cldinerrf(CLDISTAT __ec, void *func, const char *name, const char *desc)
@@ -203,7 +208,8 @@ cldiexc_t cldinerrf(CLDISTAT __ec, void *func, const char *name, const char *des
 		.exc_name=name,
 		.exc_desc=desc,
 		.function=func,
-		.ec=__ec
+		.ec=__ec,
+		.serialid = 0
 	};
 }
 
@@ -215,7 +221,7 @@ void _cldithrowexc(cldiexc_t *exc)
 
 	if (exc != NULL) {
 		const CLDISTAT ec = exc->ec;
-		if (!(CLDI_STAT_ISSUCCESS(ec))) {
+		if (CLDI_STAT_NOTSUCCESS(ec)) {
 			const char *excname = (exc->exc_name == NULL)? cldiGetErrorName(ec) : exc->exc_name;
 			const char *excdesc = (exc->exc_desc == NULL)? cldiGetErrorDesc(ec) : exc->exc_desc;
 
@@ -274,6 +280,9 @@ cldiexc_t* cldinthrowf(CLDISTAT __ec, void *func, const char *name, const char *
 }
 cldiexc_t* cldithrow(cldiexc_t *self)
 {
+	if (CLDI_ERRNO != CLDI_SUCCESS)
+		CLDI_ERROR.serialid++;
+
 	// set the current error to self
 	CLDI_ERROR.exc_name = self->exc_name;
 	CLDI_ERROR.exc_desc = self->exc_desc;
@@ -294,69 +303,114 @@ void cldiAddTraceback(void *func, const char *desc)
 	}
 }
 
-CLDISTAT cldiExcGetErrno(cldiexc_t *self)
+CLDISTAT cldiExcGetErrno(const cldiexc_t *self)
 {
 	if (self == NULL)
 		return CLDI_ENULL_ARG;
 	else
 		return self->ec;
 }
-void* cldiExcGetFunction(cldiexc_t *self)
+void* cldiExcGetFunction(const cldiexc_t *self)
 {
 	if (self == NULL)
 		return CLDI_ENULL_ARG;
 	else
 		return self->function;
 }
-const char* cldiExcGetName(cldiexc_t *self)
+const char* cldiExcGetName(const cldiexc_t *self)
 {
 	if (self == NULL)
 		return CLDI_ENULL_ARG;
 	else
 		return self->exc_name;
 }
-const char* cldiExcGetDesc(cldiexc_t *self)
+const char* cldiExcGetDesc(const cldiexc_t *self)
 {
 	if (self == NULL)
 		return CLDI_ENULL_ARG;
 	else
 		return self->exc_desc;
 }
-bool cldiExcSpecifiesFunction(cldiexc_t *self)
+unsigned long long cldiExcGetSerial(const cldiexc_t *self)
+{
+	return (self == NULL)? 0 : self->serialid;
+}
+bool cldiExcSpecifiesFunction(const cldiexc_t *self)
 {
 	if (self == NULL)
 		return false;
 	else
 		return self->function != NULL;
 }
+cldiexc_t*  cldiExcClear(cldiexc_t *self)
+{
+	if (self != NULL) {
+		if (self->ec != CLDI_SUCCESS) {
+			self->serialid++;
+			self->ec = CLDI_SUCCESS;
+		}
+		self->exc_name = CLDI_ERRNAME_SUCCESS;
+		self->exc_desc = CLDI_ERRDESC_SUCCESS;
+		self->function = NULL;
+	}
+	return self;
+}
 
-bool cldiExcIsWarning(cldiexc_t *self)
+bool cldiExcIsWarning(const cldiexc_t *self)
 {
 	if (self == NULL)
 		return false;
 	else
 		return CLDI_STAT_ISWARNING(self->ec);
 }
-bool cldiExcIsError(cldiexc_t *self)
+bool cldiExcIsError(const cldiexc_t *self)
 {
 	if (self == NULL)
 		return false;
 	else
 		return CLDI_STAT_ISERROR(self->ec);
 }
-bool cldiExcIsSuccess(cldiexc_t *self)
+bool cldiExcIsSuccess(const cldiexc_t *self)
 {
 	if (self == NULL)
 		return false;
 	else
 		return CLDI_STAT_ISSUCCESS(self->ec);
 }
-bool cldiExcIsPermissible(cldiexc_t *self)
+bool cldiExcIsPermissible(const cldiexc_t *self)
 {
 	if (self == NULL)
 		return false;
 	else
 		return CLDI_STAT_ISPERMISSIBLE(self->ec);
+}
+bool cldiExcNotWarning(const cldiexc_t *self)
+{
+	if (self == NULL)
+		return true;
+	else
+		return CLDI_STAT_NOTWARNING(self->ec);
+}
+bool cldiExcNotError(const cldiexc_t *self)
+{
+	if (self == NULL)
+		return true;
+	else
+		return CLDI_STAT_NOTERROR(self->ec);
+}
+bool cldiExcNotSuccess(const cldiexc_t *self)
+{
+	if (self == NULL)
+		return true;
+	else
+		return CLDI_STAT_NOTSUCCESS(self->ec);
+}
+bool cldiExcNotPermissible(const cldiexc_t *self)
+{
+	if (self == NULL)
+		return true;
+	else
+		return CLDI_STAT_NOTPERMISSIBLE(self->ec);
 }
 
 

@@ -144,9 +144,10 @@ extern const char *const CLDI_ERRDESC_EINCOMPATIBLE_TYPE;
 /* Exception type */
 typedef struct _CLDIEXCEPTION
 {
-	const char *exc_name, *exc_desc;
-	void       *function;
-	CLDISTAT    ec; // ec = "error code"
+	const char        *exc_name, *exc_desc;
+	void              *function;
+	CLDISTAT           ec; // ec = "error code"
+	unsigned long long serialid; // for tracking error order
 } cldiexception_t, cldiexc_t, cldierror_t;
 /* This is a global variable for passing errors while keeping return type. */
 extern cldiexc_t CLDI_ERROR;
@@ -159,13 +160,14 @@ extern cldiexc_t CLDI_ERROR;
 	CLDI_ERROR.exc_name=CLDI_ERRNAME_SUCCESS; \
 	CLDI_ERROR.exc_desc=CLDI_ERRDESC_SUCCESS; \
 	CLDI_ERROR.function=NULL;   \
-	CLDI_ERROR.ec=CLDI_SUCCESS;
+	CLDI_ERROR.ec=CLDI_SUCCESS; \
+	CLDI_ERROR.serialid++
 /* This macro is used for error catch statements. */
 #define CLDI_CATCH if(CLDI_STAT_NOTPERMISSIBLE(CLDI_ERROR.ec))
 #if defined(__cldic)
-#	define CLDITHROWS   throws()
-#	define CLDITHROWEX  throws
-#	define CLDINOEXCEPT noexcept
+#	define CLDITHROWS       throws()
+#	define CLDITHROWEX(...) throws(__VA_ARGS__)
+#	define CLDINOEXCEPT     noexcept
 #elif CLDI_C_ONLY == false
 #	define CLDITHROWS       noexcept(false)
 #	define CLDITHROWEX(...) noexcept(false)
@@ -219,13 +221,13 @@ cldiexc_t cldierrec(CLDISTAT ec);
 /* Create an error using an error code and a description (default mode). */
 cldiexc_t cldierr(CLDISTAT ec, const char *desc);
 /* Create an error using an error code, name, and description. */
-cldiexc_t cldinerr(CLDISTAT ec, const char *name, const char *desc);
+cldiexc_t cldierrn(CLDISTAT ec, const char *name, const char *desc);
 /* Create an error using an error code, specified function address (the function
 .  that was running when the error occurred), and description. */
 cldiexc_t cldierrf(CLDISTAT ec, void *function, const char *desc);
 /* Create an error using an error code, specified function address (the function
 .  that was running when the error occurred), name, and description. */
-cldiexc_t cldinerrf(CLDISTAT ec, void *function, const char *name, const char *desc);
+cldiexc_t cldierrnf(CLDISTAT ec, void *function, const char *name, const char *desc);
 
 /* Throw an error using just an error code. */
 cldiexc_t* cldithrowec(CLDISTAT ec);
@@ -246,24 +248,36 @@ cldiexc_t* cldithrow(cldiexc_t *self);
 void       cldiAddTraceback(void *function, const char *desc);
 
 /* Get the error code of an exception. */
-CLDISTAT    cldiExcGetErrno(cldiexc_t *self);
+CLDISTAT    cldiExcGetErrno(const cldiexc_t *self);
 /* Get the specified calling function from an exception. */
-void*       cldiExcGetFunction(cldiexc_t *self);
+void*       cldiExcGetFunction(const cldiexc_t *self);
 /* Get the name of an exception. */
-const char* cldiExcGetName(cldiexc_t *self);
+const char* cldiExcGetName(const cldiexc_t *self);
 /* Get the description of an exception. */
-const char* cldiExcGetDesc(cldiexc_t *self);
+const char* cldiExcGetDesc(const cldiexc_t *self);
+/* Get the serial ID of an exception. */
+unsigned long long cldiExcGetSerial(const cldiexc_t *self);
 /* Check the exception for a specified calling function. */
-bool        cldiExcSpecifiesFunction(cldiexc_t *self);
+bool        cldiExcSpecifiesFunction(const cldiexc_t *self);
+/* Clear the exception. */
+cldiexc_t*  cldiExcClear(cldiexc_t *self);
 
 /* Check if an exception is a warning. */
-bool cldiExcIsWarning(cldiexc_t *self);
+bool cldiExcIsWarning(const cldiexc_t *self);
 /* Check if an exception is an error. */
-bool cldiExcIsError(cldiexc_t *self);
+bool cldiExcIsError(const cldiexc_t *self);
 /* Check if an exception is success. */
-bool cldiExcIsSuccess(cldiexc_t *self);
+bool cldiExcIsSuccess(const cldiexc_t *self);
 /* Check if an exception is permissible. */
-bool cldiExcIsPermissible(cldiexc_t *self);
+bool cldiExcIsPermissible(const cldiexc_t *self);
+/* Check if an exception is not a warning. */
+bool cldiExcNotWarning(const cldiexc_t *self);
+/* Check if an exception is not an error. */
+bool cldiExcNotError(const cldiexc_t *self);
+/* Check if an exception is not success. */
+bool cldiExcNotSuccess(const cldiexc_t *self);
+/* Check if an exception is not permissible. */
+bool cldiExcNotPermissible(const cldiexc_t *self);
 
 #ifdef __cplusplus
 }

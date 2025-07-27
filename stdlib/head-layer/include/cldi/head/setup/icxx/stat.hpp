@@ -74,33 +74,47 @@ namespace cldi
 	constexpr CSTDLIB_ERRCONTEXT CSTDEC_VDPRINTF = ::CLDI_CSTDEC_VDPRINTF;
 	constexpr CSTDLIB_ERRCONTEXT CSTDEC_DPRINTF = ::CLDI_CSTDEC_DPRINTF;
 
-	using exc_t       = cldiexc_t;
-	using exception_t = cldiexc_t;
-	using error_t     = cldiexc_t;
+	typedef class exception: public cldiexception_t
+	{
+		exception(STAT ec);
+		exception(STAT ec, const char *desc);
+		exception(STAT ec, const char *name, const char *desc);
+
+		static exception InFunction(STAT ec void *function);
+		static exception InFunction(STAT ec void *function, const char *desc);
+		static exception InFunction(STAT ec void *function, const char *name, const char *desc);
+
+		~exception();
+
+		static exception& Throw(CLDISTAT);
+		static exception& Throw(CLDISTAT, const char*);
+		static exception& Throw(CLDISTAT, const char*, const char*);
+		static exception& ThrowF(CLDISTAT, void*, const char*);
+		static exception& ThrowF(CLDISTAT, void*, const char*, const char*);
+
+		exception& Throw() const;
+
+		STAT        Errno() const;
+		void*       Function() const;
+		const char* Name() const;
+		const char* Description() const;
+		unsigned long long SerialID() const;
+
+		void Clear();
+
+		bool SpecifiesFunction() const;
+		bool IsWarning() const;
+		bool IsError() const;
+		bool IsSuccess() const;
+		bool IsPermissible() const;
+		bool NotWarning() const;
+		bool NotError() const;
+		bool NotSuccess() const;
+		bool NotPermissible() const;
+	} exc_t;
 
 	inline exc_t &ERROR = CLDI_ERROR;
 	inline STAT  &ERRNO = CLDI_ERRNO;
-
-	cldiexc_t   (&ErrEc)(CLDISTAT) = ::cldierrec;
-	cldiexc_t   (&Err)(CLDISTAT, const char*) = ::cldierr;
-	cldiexc_t   (&ErrN)(CLDISTAT, const char*, const char*) = ::cldinerr;
-	cldiexc_t   (&ErrF)(CLDISTAT , void*, const char*) = ::cldierrf;
-	cldiexc_t   (&ErrNF)(CLDISTAT, void*, const char*, const char*) = ::cldinerrf;
-	cldiexc_t*  (&ThrowEc)(CLDISTAT) = ::cldithrowec;
-	cldiexc_t*  (&ThrowD)(CLDISTAT, const char*) = ::cldithrowd;
-	cldiexc_t*  (&ThrowN)(CLDISTAT, const char*, const char*) = ::cldinthrow;
-	cldiexc_t*  (&ThrowF)(CLDISTAT, void*, const char*) = ::cldithrowf;
-	cldiexc_t*  (&ThrowNF)(CLDISTAT, void*, const char*, const char*) = ::cldinthrowf;
-	cldiexc_t*  (&Throw)(cldiexc_t*) = ::cldithrow;
-	CLDISTAT    (&ExcGetErrno)(cldiexc_t*) = ::cldiExcGetErrno;
-	void*       (&ExcGetFunction)(cldiexc_t*) = ::cldiExcGetFunction;
-	const char* (&ExcGetName)(cldiexc_t*) = ::cldiExcGetName;
-	const char* (&ExcGetDesc)(cldiexc_t*) = ::cldiExcGetDesc;
-	bool        (&ExcSpecifiesFunction)(cldiexc_t*) = ::cldiExcSpecifiesFunction;
-	bool        (&ExcIsWarning)(cldiexc_t*) = ::cldiExcIsWarning;
-	bool        (&ExcIsError)(cldiexc_t*) = ::cldiExcIsError;
-	bool        (&ExcIsSuccess)(cldiexc_t*) = ::cldiExcIsSuccess;
-	bool        (&ExcIsPermissible)(cldiexc_t*) = ::cldiExcIsPermissible;
 
 	/* Function for converting C++ standard library errors into CLDISTAT error
 	.  codes. */
